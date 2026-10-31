@@ -1867,16 +1867,10 @@
           if (raw) {
             AppState.monthData = JSON.parse(raw);
           } else {
-            // Check if March 2026 default seed should be loaded
-            if (year === 2026 && month === 2) {
-              AppState.monthData = getDemoSeedData();
-              saveMonthData(year, month);
-            } else {
-              AppState.monthData = {
-                monthlyTarget: AppState.settings.defaultMonthlyTarget,
-                days: {}
-              };
-            }
+            AppState.monthData = {
+              monthlyTarget: AppState.settings.defaultMonthlyTarget,
+              days: {}
+            };
           }
 
           if (!AppState.monthData.monthlyTarget) {
@@ -1907,17 +1901,6 @@
         }, 350);
       }
 
-      // Demo seed matching prompt's example for March 2026
-      function getDemoSeedData() {
-        const days = {};
-        days[1] = { shift1: "Zomato", shift2: "Zomato", shift3: "Zomato", zomato: 1725 };
-        days[2] = { shift1: "Zomato", shift2: "Zomato", shift3: "Zomato", zomato: 1831 };
-        return {
-          monthlyTarget: 50000,
-          days: days
-        };
-      }
-
       // --- INITIALIZATION ---
       function initApp() {
         loadPersistedSettings();
@@ -1942,9 +1925,25 @@
           yearSelect.appendChild(opt);
         }
 
-        // Set initial view date (default March 2026 as per prompt example)
-        AppState.currentYear = 2026;
-        AppState.currentMonth = 2; // March
+        // Always open the current calendar month
+        const today = new Date();
+        AppState.currentYear = today.getFullYear();
+        AppState.currentMonth = today.getMonth();
+
+        // Remove the known March 2026 demo sample from this device, if it is still present.
+        const oldDemoKey = getMonthStorageKey(2026, 2);
+        try {
+          const oldDemo = JSON.parse(localStorage.getItem(oldDemoKey) || "null");
+          const d1 = oldDemo?.days?.[1];
+          const d2 = oldDemo?.days?.[2];
+          const isDemoSample = oldDemo &&
+            Number(d1?.zomato) === 1725 &&
+            Number(d2?.zomato) === 1831 &&
+            Object.keys(oldDemo.days || {}).length === 2;
+          if (isDemoSample) localStorage.removeItem(oldDemoKey);
+        } catch (e) {
+          console.warn("Could not inspect old demo sample", e);
+        }
 
         monthSelect.value = AppState.currentMonth;
         yearSelect.value = AppState.currentYear;
