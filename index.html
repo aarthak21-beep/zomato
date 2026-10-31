@@ -1936,6 +1936,144 @@
         .toolbar-strip { padding: .9rem; border-radius: 14px; }
         .report-card { padding: 1rem; border-radius: 13px; }
       }
+    
+      /* MOTI FINAL DETAIL POLISH — BRAND, STATES & RESPONSIVE FINISH */
+      :root {
+        color-scheme: dark;
+        --bg-main: #091625;
+        --bg-surface: #102238;
+        --bg-card: #142a40;
+        --bg-card-hover: #1a344d;
+        --bg-input: #081827;
+        --border-subtle: rgba(174,198,222,.13);
+        --border-strong: rgba(214,181,109,.28);
+        --shadow-card: 0 12px 32px rgba(0,0,0,.24);
+      }
+      html { scroll-behavior: smooth; }
+      body {
+        background:
+          radial-gradient(ellipse at 8% 0%, rgba(44,79,111,.18), transparent 34rem),
+          radial-gradient(ellipse at 95% 28%, rgba(135,54,74,.09), transparent 30rem),
+          #091625;
+      }
+      ::selection { background: rgba(214,181,109,.28); color: #fff8e8; }
+      header.app-topbar {
+        background: linear-gradient(100deg,rgba(10,27,44,.97),rgba(17,34,53,.95) 58%,rgba(35,29,47,.94));
+        border-bottom-color: rgba(214,181,109,.22);
+        box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      }
+      .brand-zone { gap: .85rem; }
+      .brand-badge {
+        padding: .38rem .72rem;
+        border-radius: 10px;
+        background: linear-gradient(145deg,#a84458,#702d45);
+        border: 1px solid rgba(255,255,255,.17);
+        box-shadow: 0 6px 18px rgba(135,54,74,.25),inset 0 1px 0 rgba(255,255,255,.2);
+      }
+      .brand-title { color: #f3dfb5; letter-spacing: -.45px; }
+      .action-zone .btn { min-height: 36px; }
+      main.app-viewport { padding-top: clamp(1rem,2.2vw,1.65rem); }
+      .table-card, .chart-card, .report-history-card, .form-section,
+      .report-card, .toolbar-strip {
+        backdrop-filter: blur(10px);
+      }
+      .chart-title, .section-title, .table-heading {
+        letter-spacing: -.25px;
+      }
+      .chart-title { color: #f0d9a7; }
+      .table-meta-text, .form-help { line-height: 1.55; }
+      .btn:disabled, button:disabled {
+        opacity: .48;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+        filter: saturate(.55);
+      }
+      .btn-primary {
+        background: linear-gradient(110deg,#a84458,#783047);
+        border: 1px solid rgba(255,220,205,.16);
+        box-shadow: 0 7px 18px rgba(135,54,74,.24),inset 0 1px 0 rgba(255,255,255,.12);
+      }
+      .btn-primary:hover {
+        background: linear-gradient(110deg,#bd5367,#87364a);
+        box-shadow: 0 10px 22px rgba(135,54,74,.32);
+      }
+      .select-input:focus, .text-input:focus,
+      input:focus-visible, select:focus-visible, textarea:focus-visible {
+        outline: none;
+        border-color: rgba(214,181,109,.72);
+        box-shadow: 0 0 0 3px rgba(214,181,109,.12);
+      }
+      select option { background: #102238; color: #e7edf5; }
+      .status-pill-save { color: #b8d9ca; }
+      .status-dot-green { animation: moti-status-pulse 2.8s ease-in-out infinite; }
+      @keyframes moti-status-pulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.08),0 0 7px rgba(16,185,129,.48); }
+        50% { box-shadow: 0 0 0 4px rgba(16,185,129,.06),0 0 11px rgba(16,185,129,.65); }
+      }
+      .modal-box {
+        background: linear-gradient(145deg,#19324b,#0d2034);
+        border: 1px solid rgba(214,181,109,.27);
+        box-shadow: 0 28px 85px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.04);
+      }
+      .modal-box input, .modal-box select, .modal-box textarea {
+        border-color: rgba(180,202,226,.2);
+      }
+      #toast-container { z-index: 12000; }
+      #toast-container .toast { border-radius: 12px; }
+      .report-history-table td, .report-history-table th { white-space: nowrap; }
+      .table-responsive:focus-within { outline: 1px solid rgba(214,181,109,.12); outline-offset: 2px; }
+      @media (hover:hover) {
+        .brand-badge { transition: transform .2s ease,box-shadow .2s ease; }
+        .brand-badge:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(135,54,74,.32); }
+        .chart-card:hover, .report-history-card:hover {
+          border-color: rgba(214,181,109,.34);
+          box-shadow: 0 16px 34px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.035);
+        }
+      }
+      @media (max-width: 768px) {
+        header.app-topbar { gap: .6rem; padding: .7rem .85rem; }
+        .brand-zone { gap: .55rem; }
+        .brand-title { font-size: .92rem; }
+        .action-zone { gap: .4rem; }
+        main.app-viewport { padding: .9rem .75rem 1.4rem; }
+        .status-pill-save { font-size: .68rem; padding: .3rem .48rem; }
+      }
+      @media (max-width: 480px) {
+        header.app-topbar { align-items: flex-start; flex-wrap: wrap; }
+        .brand-zone { min-width: 0; }
+        .brand-title { font-size: .84rem; white-space: normal; }
+        .action-zone { margin-left: auto; }
+        .action-zone .btn { padding: .42rem .58rem; font-size: .72rem; }
+        .status-pill-save { margin-right: 0; }
+        .toolbar-strip { gap: .7rem; }
+        .toolbar-group { gap: .48rem; }
+        .toolbar-label { font-size: .68rem; }
+        .chart-card, .report-history-card { border-radius: 13px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          scroll-behavior: auto !important;
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+      }
+      @media print {
+        body { background: #fff !important; color: #111 !important; }
+        header.app-topbar, .toolbar-strip, .action-zone, .settings-tabs,
+        button, #toast-container { display: none !important; }
+        main.app-viewport { max-width: none; padding: 0; }
+        .table-card, .chart-card, .report-card, .report-history-card {
+          background: #fff !important; color: #111 !important;
+          box-shadow: none !important; border: 1px solid #bbb !important;
+          break-inside: avoid;
+        }
+        table.earning-table { min-width: 0; font-size: 8pt; }
+        table.earning-table thead th, table.earning-table tbody td,
+        table.earning-table tfoot td { color: #111 !important; background: #fff !important; }
+      }
+
     </style>
   </head>
   <body>
