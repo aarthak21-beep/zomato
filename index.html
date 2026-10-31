@@ -931,6 +931,21 @@
         }
       }
 
+      .auth-powered-by {
+        margin-top: 1.6rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,.09);
+        color: #8992a4;
+        font-size: .76rem;
+        letter-spacing: .45px;
+        text-align: center;
+      }
+      .auth-powered-by strong {
+        color: #f1f5f9;
+        font-weight: 800;
+        letter-spacing: .7px;
+      }
+
       /* --- PREMIUM LOGIN + MOBILE-FIRST POLISH --- */
       #auth-screen {
         background:
@@ -1079,15 +1094,7 @@
           </button>
         </form>
 
-        <div class="auth-hint">
-          <div style="font-weight: 600; color: #cbd5e1; margin-bottom: 0.25rem;">Default Personal Credentials:</div>
-          <div>Username: <strong style="color: #fff;">rider</strong> &bull; Password: <strong style="color: #fff;">zomato2026</strong></div>
-          <div style="margin-top: 0.4rem;">
-            <button id="quick-fill-btn" class="btn btn-secondary btn-sm" style="width: 100%;">
-              Click to Auto-fill Demo Credentials
-            </button>
-          </div>
-        </div>
+        <div class="auth-powered-by">Powered by <strong>Moti Technologies</strong></div>
       </div>
     </div>
 
@@ -2109,11 +2116,6 @@
           } else {
             showToast("Invalid username or password", "error");
           }
-        });
-
-        document.getElementById("quick-fill-btn").addEventListener("click", () => {
-          document.getElementById("login-username").value = AppState.auth.username;
-          document.getElementById("login-password").value = AppState.auth.passwordHash;
         });
 
         document.getElementById("logout-btn").addEventListener("click", () => {
