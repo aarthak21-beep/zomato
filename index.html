@@ -4969,8 +4969,9 @@
               old.score+=Math.max(1,v.conf);old.hits++;ranked.set(v.n,old);
             });
             const choices=[...ranked.values()].sort((x,y)=>y.hits-x.hits||y.score-x.score);
-            // Require repeated agreement between independent OCR passes.
-            values.push(choices.length&&choices[0].hits>=2?choices[0].n:"");
+            // Keep the strongest plausible OCR candidate for manual review in the preview.
+            // Requiring two identical passes was too strict and left every field blank.
+            values.push(choices.length&&choices[0].score>0?choices[0].n:"");
           }
         } finally {
           if(worker.setParameters) await worker.setParameters({tessedit_char_whitelist:""});
@@ -5011,7 +5012,7 @@
                 const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
-              status.textContent=graphResult.estimated?"OCR नी labels वाचले नाहीत, म्हणून bar height आणि weekly total वरून अंदाजे रक्कम भरली आहे. प्रत्येक रक्कम Graph शी तपासा; edit करू शकता. Weekly total स्वतंत्र import होणार नाही.":"Graph मधील Amount OCR ने वाचले. प्रत्येक रक्कम तपासा; रिकामी असल्यास भरा. Weekly total import होणार नाही.";
+              status.textContent="Weekly Graph OCR पूर्ण. भरलेले Amount अंदाजे OCR candidates आहेत—प्रत्येक रक्कम मूळ Graph शी तपासा व गरज असल्यास edit करा. Weekly total import होणार नाही.";
             }else{
               document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
               const daily=parseZomatoDailyScreenshotText(result.data.text);
