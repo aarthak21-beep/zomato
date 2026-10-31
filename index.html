@@ -4885,25 +4885,34 @@
         const am=[...normalized.matchAll(/[₹रRs.]*\s*([0-9]{1,7}\.[0-9]{1,2})/gi)];
         return {date,amount:am.length?Number(am[0][1]):NaN,dateFound:!!date,amountFound:!!am.length};
       }
-      function parseZomatoWeeklyScreenshot(text,words,height) {
+      function parseZomatoWeeklyScreenshot(text,words,height,width) {
         const raw=String(text||"").replace(/,/g,"").replace(/\s+/g," ");
         const p=raw.match(/\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*[-–]\s*(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})\b/i);
         if(!p)return null;
         const ms=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
         const sm=ms.indexOf(p[2].slice(0,3).toLowerCase()),em=ms.indexOf(p[4].slice(0,3).toLowerCase()),yr=Number(p[5]);
-        const start=new Date(yr,sm,Number(p[1])),end=new Date(yr,em,Number(p[3])),h=Number(height||1600);
+        if(sm<0||em<0)return null;
+        const start=new Date(yr,sm,Number(p[1])),end=new Date(yr,em,Number(p[3]));
         const ws=(words||[]).filter(w=>w&&w.bbox&&w.text).map(w=>({t:String(w.text).trim(),x:(w.bbox.x0+w.bbox.x1)/2,y:(w.bbox.y0+w.bbox.y1)/2}));
-        const ds=ws.filter(o=>/^\d{1,2}$/.test(o.t)&&+o.t>=1&&+o.t<=31&&o.y/h>.59&&o.y/h<.72);
-        const as=ws.filter(o=>o.y/h>.45&&o.y/h<.66&&/[0-9]/.test(o.t)&&!(/^(19|20|21|22|23|24|25)$/.test(o.t)));
+        const h=Number(height)||Math.max(1,...ws.map(o=>o.y))*1.08;
+        const w=Number(width)||Math.max(1,...ws.map(o=>o.x))*2;
+        const ds=ws.filter(o=>/^\d{1,2}$/.test(o.t)&&+o.t>=1&&+o.t<=31&&o.y/h>.52&&o.y/h<.9);
+        const amounts=ws.map(o=>{const clean=o.t.replace(/[₹रRs,]/gi,"");const m=clean.match(/^\d+(?:\.\d{1,2})?$/);return m?{...o,value:Number(m[0])}:null;}).filter(Boolean)
+          .filter(o=>o.y/h>.32&&o.y/h<.78);
         const rows=[];
-        for(const d of ds){const day=+d.t,dt=new Date(start.getFullYear(),start.getMonth(),day);if(dt<start||dt>end)continue;
-          let best=null,dist=Infinity;for(const a of as){const dx=Math.abs(a.x-d.x);if(a.y<d.y&&dx<dist){best=a;dist=dx;}}
-          if(!best||dist>h*.12)continue;
-          const m=best.t.replace(/[₹रRs,]/gi,"").match(/\d+(?:\.\d{1,2})?/);if(!m)continue;
-          rows.push({date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"),amount:Number(m[0])});
+        for(const d of ds){
+          const day=Number(d.t),dt=new Date(start.getFullYear(),start.getMonth(),day);
+          if(dt<start||dt>end)continue;
+          let best=null,score=Infinity;
+          for(const a of amounts){
+            if(a.y>=d.y || Math.abs(a.x-d.x)>w*.14)continue;
+            const candidate=Math.abs(a.x-d.x)+Math.abs((d.y-a.y)-h*.09)*.12;
+            if(candidate<score){score=candidate;best=a;}
+          }
+          if(best)rows.push({date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"),amount:best.value});
         }
-        const uniq=[...new Map(rows.map(x=>[x.date,x])).values()].sort((a,b)=>a.date.localeCompare(b.date));
-        return uniq.length?uniq:null;
+        const unique=[...new Map(rows.map(x=>[x.date,x])).values()].sort((a,b)=>a.date.localeCompare(b.date));
+        return unique.length?unique:null;
       }
 
       async function handleZomatoScreenshot(event) {
@@ -4913,7 +4922,7 @@
         try{
           const T=await loadTesseractLibrary(),worker=await T.createWorker("eng");
           try{
-            const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h);
+            const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h,result.data.imageSize?.w);
             if(weekly){
               pendingZomatoScreenshotImport={type:"week"};
               document.getElementById("screenshot-daily-fields").style.display="none";
@@ -4926,7 +4935,7 @@
                 const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
-              status.textContent="Weekly Graph मधील daily amounts वाचले. प्रत्येक तारीख व रक्कम तपासा; वरचा weekly total import होणार नाही.";
+              status.textContent="Weekly Graph मधील "+weekly.length+" daily amount(s) वाचले. रिकामे fields असल्यास OCR ने ती रक्कम ओळखली नाही—Graph पाहून manually भरा. वरचा weekly total import होणार नाही.";
             }else{
               document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
               const daily=parseZomatoDailyScreenshotText(result.data.text);
