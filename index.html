@@ -4989,7 +4989,15 @@
             const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h,result.data.imageSize?.w);
             if(weekly){
               status.textContent="Weekly Graph मधील सात Amount वेगवेगळे वाचत आहे…";
-              const graphResult=await readWeeklyGraphAmounts(file,worker,weekly.length,result.data.text);
+              // Use a dedicated OCR worker for graph labels so the main screenshot
+              // recognition settings/state cannot interfere with weekly crop recognition.
+              const weeklyWorker=await T.createWorker("eng");
+              let graphResult;
+              try {
+                graphResult=await readWeeklyGraphAmounts(file,weeklyWorker,weekly.length,result.data.text);
+              } finally {
+                await weeklyWorker.terminate();
+              }
               const graphAmounts=graphResult.amounts;
               weekly.forEach((row,i)=>row.amount=graphAmounts[i]);
               pendingZomatoScreenshotImport={type:"week"};
