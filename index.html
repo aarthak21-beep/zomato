@@ -4909,8 +4909,8 @@
         const bitmap = await createImageBitmap(file);
         const w = bitmap.width, h = bitmap.height;
         const centers = [0.135,0.257,0.378,0.499,0.621,0.742,0.864];
-        const cropW = Math.round(w * 0.15), cropH = Math.round(h * 0.145);
-        const top = Math.round(h * 0.515);
+        const cropW = Math.round(w * 0.15), cropH = Math.round(h * 0.12);
+        const top = Math.round(h * 0.52);
         const angle = 25 * Math.PI / 180;
         const outW = Math.ceil(cropW * Math.cos(angle) + cropH * Math.sin(angle));
         const outH = Math.ceil(cropW * Math.sin(angle) + cropH * Math.cos(angle));
