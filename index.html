@@ -4886,33 +4886,23 @@
         return {date,amount:am.length?Number(am[0][1]):NaN,dateFound:!!date,amountFound:!!am.length};
       }
       function parseZomatoWeeklyScreenshot(text,words,height,width) {
-        const raw=String(text||"").replace(/,/g,"").replace(/\s+/g," ");
+        const raw=String(text||"").replace(/\s+/g," ");
         const p=raw.match(/\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*[-–]\s*(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})\b/i);
         if(!p)return null;
         const ms=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
         const sm=ms.indexOf(p[2].slice(0,3).toLowerCase()),em=ms.indexOf(p[4].slice(0,3).toLowerCase()),yr=Number(p[5]);
         if(sm<0||em<0)return null;
         const start=new Date(yr,sm,Number(p[1])),end=new Date(yr,em,Number(p[3]));
-        const ws=(words||[]).filter(w=>w&&w.bbox&&w.text).map(w=>({t:String(w.text).trim(),x:(w.bbox.x0+w.bbox.x1)/2,y:(w.bbox.y0+w.bbox.y1)/2}));
-        const h=Number(height)||Math.max(1,...ws.map(o=>o.y))*1.08;
-        const w=Number(width)||Math.max(1,...ws.map(o=>o.x))*2;
-        const ds=ws.filter(o=>/^\d{1,2}$/.test(o.t)&&+o.t>=1&&+o.t<=31&&o.y/h>.52&&o.y/h<.9);
-        const amounts=ws.map(o=>{const clean=o.t.replace(/[₹रRs,]/gi,"");const m=clean.match(/^\d+(?:\.\d{1,2})?$/);return m?{...o,value:Number(m[0])}:null;}).filter(Boolean)
-          .filter(o=>o.y/h>.32&&o.y/h<.78);
+        const days=Math.round((end-start)/86400000)+1;
+        if(days<1||days>7)return null;
+        // Graph value labels are angled; OCR word boxes often mistake axis dates/year for amounts.
+        // Generate the exact dates and leave amounts blank rather than importing unsafe guesses.
         const rows=[];
-        for(const d of ds){
-          const day=Number(d.t),dt=new Date(start.getFullYear(),start.getMonth(),day);
-          if(dt<start||dt>end)continue;
-          let best=null,score=Infinity;
-          for(const a of amounts){
-            if(a.y>=d.y || Math.abs(a.x-d.x)>w*.14)continue;
-            const candidate=Math.abs(a.x-d.x)+Math.abs((d.y-a.y)-h*.09)*.12;
-            if(candidate<score){score=candidate;best=a;}
-          }
-          if(best)rows.push({date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"),amount:best.value});
+        for(let i=0;i<days;i++){
+          const d=new Date(start);d.setDate(start.getDate()+i);
+          rows.push({date:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),amount:""});
         }
-        const unique=[...new Map(rows.map(x=>[x.date,x])).values()].sort((a,b)=>a.date.localeCompare(b.date));
-        return unique.length?unique:null;
+        return rows;
       }
 
       async function handleZomatoScreenshot(event) {
@@ -4931,11 +4921,11 @@
               weekly.forEach((r,i)=>{
                 const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0";
                 const d=document.createElement("input");d.type="date";d.value=r.date;d.dataset.weekDate=i;
-                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.value=r.amount;a.dataset.weekAmount=i;
+                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.placeholder="Graph amount भरा";a.value=r.amount;a.dataset.weekAmount=i;
                 const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
-              status.textContent="Weekly Graph मधील "+weekly.length+" daily amount(s) वाचले. रिकामे fields असल्यास OCR ने ती रक्कम ओळखली नाही—Graph पाहून manually भरा. वरचा weekly total import होणार नाही.";
+              status.textContent="सातही तारखा वाचल्या. Graph मधील वाकडे Amount OCR चुकीचे वाचू शकतो, म्हणून Amount रिकामे ठेवले आहेत—Graph पाहून भरा. Weekly total import होणार नाही.";
             }else{
               document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
               const daily=parseZomatoDailyScreenshotText(result.data.text);
