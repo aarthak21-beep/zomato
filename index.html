@@ -4905,52 +4905,68 @@
         return rows;
       }
 
-      async function readWeeklyGraphAmounts(file, worker, count) {
+      async function readWeeklyGraphAmounts(file, worker, count, ocrText) {
         const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=[];
-        // Zomato Partner weekly chart has seven fixed day slots. Crop each tilted value label,
-        // not the date axis or bars, using positions relative to the screenshot dimensions.
-        const slots=[
-          [0.135,0.568],[0.257,0.519],[0.379,0.544],[0.500,0.580],
-          [0.621,0.593],[0.743,0.580],[0.864,0.592]
-        ];
+        const slots=[.135,.257,.379,.500,.621,.743,.864];
         try {
-          if(worker.setParameters) await worker.setParameters({
-            tessedit_pageseg_mode:"7",
-            tessedit_char_whitelist:"0123456789"
-          });
+          // First attempt OCR on the individual rotated labels.
+          if(worker.setParameters) await worker.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789"});
           for(let i=0;i<count;i++){
-            const [nx,ny]=slots[i]||[0.135+i*0.122,0.57];
-            const cw=Math.round(w*0.145),ch=Math.round(h*0.045);
+            const nx=slots[i],ny=[.60,.548,.57,.62,.63,.618,.632][i];
+            const cw=Math.round(w*.18),ch=Math.round(h*.065);
             const sx=Math.max(0,Math.min(w-cw,Math.round(w*nx-cw/2)));
             const sy=Math.max(0,Math.min(h-ch,Math.round(h*ny-ch/2)));
             const crop=document.createElement("canvas");crop.width=cw;crop.height=ch;
-            const cc=crop.getContext("2d");
-            cc.fillStyle="#fff";cc.fillRect(0,0,cw,ch);
+            const cc=crop.getContext("2d");cc.fillStyle="#fff";cc.fillRect(0,0,cw,ch);
             cc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
-            const angle=25*Math.PI/180,scale=5;
-            const rw=Math.ceil((cw*Math.cos(angle)+ch*Math.sin(angle))*scale);
-            const rh=Math.ceil((cw*Math.sin(angle)+ch*Math.cos(angle))*scale);
-            const rotated=document.createElement("canvas");rotated.width=rw;rotated.height=rh;
-            const rc=rotated.getContext("2d");rc.fillStyle="#fff";rc.fillRect(0,0,rw,rh);
-            rc.translate(rw/2,rh/2);rc.rotate(angle);rc.scale(scale,scale);
-            rc.drawImage(crop,-cw/2,-ch/2);
-            const pixels=rc.getImageData(0,0,rw,rh),data=pixels.data;
-            for(let k=0;k<data.length;k+=4){
-              const lum=data[k]*.299+data[k+1]*.587+data[k+2]*.114;
-              const v=lum>150?255:0;data[k]=data[k+1]=data[k+2]=v;data[k+3]=255;
-            }
-            rc.putImageData(pixels,0,0);
-            const result=await worker.recognize(rotated);
-            const digits=String(result.data.text||"").replace(/\D/g,"");
-            // Require a plausible whole label; never turn a stray single OCR digit into earnings.
-            const amount=digits.length>=2&&digits.length<=4?Number(digits):"";
-            values.push(amount);
+            const angle=30*Math.PI/180,scale=5;
+            const rw=Math.ceil((cw*Math.cos(angle)+ch*Math.sin(angle))*scale),rh=Math.ceil((cw*Math.sin(angle)+ch*Math.cos(angle))*scale);
+            const rot=document.createElement("canvas");rot.width=rw;rot.height=rh;
+            const rc=rot.getContext("2d");rc.fillStyle="#fff";rc.fillRect(0,0,rw,rh);
+            rc.translate(rw/2,rh/2);rc.rotate(angle);rc.scale(scale,scale);rc.drawImage(crop,-cw/2,-ch/2);
+            const out=await worker.recognize(rot);
+            const digits=String(out.data.text||"").replace(/\D/g,"");
+            values.push(digits.length>=2&&digits.length<=4?Number(digits):"");
           }
+          // If OCR cannot read labels, estimate from the seven bar heights and the displayed weekly total.
+          // Marked as estimates in the UI; user can edit before confirming.
+          if(values.filter(v=>v!=="").length<Math.max(5,count-1)){
+            const match=String(ocrText||"").replace(/,/g,"").match(/₹\s*([0-9]{3,6}(?:\.[0-9]{1,2})?)/);
+            const total=match?Number(match[1]):NaN;
+            if(Number.isFinite(total)&&total>0){
+              const pixels=bitmap.width===w?document.createElement("canvas"):null;
+              const c=document.createElement("canvas");c.width=w;c.height=h;
+              const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(bitmap,0,0);
+              const image=ctx.getImageData(0,0,w,h),data=image.data;
+              const base=Math.round(h*.649),top=Math.round(h*.535),heights=[];
+              for(let i=0;i<count;i++){
+                const cx=Math.round(w*slots[i]),half=Math.max(3,Math.round(w*.012));
+                let first=base;
+                for(let y=top;y<base;y++){
+                  let white=0;
+                  for(let x=Math.max(0,cx-half);x<=Math.min(w-1,cx+half);x++){
+                    const k=(y*w+x)*4,lum=data[k]*.299+data[k+1]*.587+data[k+2]*.114;
+                    if(lum>205)white++;
+                  }
+                  if(white>=Math.max(2,Math.round(half*.45))){first=y;break;}
+                }
+                heights.push(first===base?0:base-first);
+              }
+              const sum=heights.reduce((a,b)=>a+b,0);
+              if(sum>0){
+                const estimates=heights.map(v=>Math.round(total*v/sum));
+                const diff=Math.round(total)-estimates.reduce((a,b)=>a+b,0);
+                const maxIndex=heights.indexOf(Math.max(...heights));
+                estimates[maxIndex]+=diff;
+                return {amounts:estimates,estimated:true};
+              }
+            }
+          }
+          return {amounts:values,estimated:false};
         } finally {
           if(worker.setParameters) await worker.setParameters({tessedit_char_whitelist:""});
           bitmap.close();
         }
-        return values;
       }
 
       async function handleZomatoScreenshot(event) {
@@ -4963,7 +4979,8 @@
             const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h,result.data.imageSize?.w);
             if(weekly){
               status.textContent="Weekly Graph मधील सात Amount वेगवेगळे वाचत आहे…";
-              const graphAmounts=await readWeeklyGraphAmounts(file,worker,weekly.length);
+              const graphResult=await readWeeklyGraphAmounts(file,worker,weekly.length,result.data.text);
+              const graphAmounts=graphResult.amounts;
               weekly.forEach((row,i)=>row.amount=graphAmounts[i]);
               pendingZomatoScreenshotImport={type:"week"};
               document.getElementById("screenshot-daily-fields").style.display="none";
@@ -4976,7 +4993,7 @@
                 const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
-              status.textContent="Graph मधील Amount वेगवेगळे OCR ने वाचले. प्रत्येक रक्कम तपासा; रिकामी असल्यास भरा. Weekly total import होणार नाही.";
+              status.textContent=graphResult.estimated?"OCR नी labels वाचले नाहीत, म्हणून bar height आणि weekly total वरून अंदाजे रक्कम भरली आहे. प्रत्येक रक्कम Graph शी तपासा; edit करू शकता. Weekly total स्वतंत्र import होणार नाही.":"Graph मधील Amount OCR ने वाचले. प्रत्येक रक्कम तपासा; रिकामी असल्यास भरा. Weekly total import होणार नाही.";
             }else{
               document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
               const daily=parseZomatoDailyScreenshotText(result.data.text);
