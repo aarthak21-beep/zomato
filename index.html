@@ -2956,13 +2956,13 @@
           <!-- Tab 6: Backup & Restore (JSON / CSV / Reset) -->
           <div class="form-section" id="tab-backup">
             <div class="report-card" id="screenshot-import-card" style="border-color: rgba(214,181,109,.42); background: linear-gradient(145deg, rgba(19,35,52,.92), rgba(35,24,37,.72));">
-              <h4 style="color:#e8cb83;">📸 Zomato Screenshot Import</h4>
-              <p class="form-help" style="margin-bottom:1rem;">Zomato Partner App मधील <strong>Day</strong> Earnings screenshot निवडा. Screenshot मधून तारीख आणि एकूण कमाई वाचून preview दाखवला जाईल. Confirm केल्यावर त्या दिवसाच्या ZOMATO column मध्ये रक्कम भरेल.</p>
+              <h4 style="color:#e8cb83;">📸 Partner App Screenshot Import</h4>
+              <p class="form-help" style="margin-bottom:1rem;">कोणत्याही delivery partner app मधील <strong>Day</strong> Earnings screenshot निवडा. फक्त <strong>Total earning</strong> नोंदवली जाईल—Order earning + Incentive + Other earnings यांची एकूण रक्कम. Incentive वेगळे add करण्याची गरज नाही.</p>
               <div class="form-group">
-                <label for="zomato-earning-screenshot">Select Day Earnings Screenshot</label>
+                <label for="zomato-earning-screenshot">Select Daily Earnings Screenshot</label>
                 <input type="file" id="zomato-earning-screenshot" accept="image/*" style="width:100%;padding:.7rem;border:1px solid var(--border-subtle);border-radius:10px;background:var(--bg-input);" />
               </div>
-              <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. फक्त Day tab चा screenshot वापरा; Week/Month summary पुढील update मध्ये.</div>
+              <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. फक्त Day tab चा screenshot वापरा. Total earning मध्ये incentive समाविष्ट असते.</div>
               <div id="screenshot-import-preview" style="display:none;margin-top:1rem;padding:1rem;border:1px solid rgba(214,181,109,.28);border-radius:12px;background:rgba(5,12,20,.38);">
                 <div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div>
                 <div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div>
@@ -2972,7 +2972,7 @@
                   <button type="button" id="screenshot-import-cancel" class="btn btn-secondary btn-sm">Cancel</button>
                 </div>
               </div>
-              <p class="form-help" style="margin-top:1rem;">Duplicate protection: same date + same amount पुन्हा आल्यास Skip. त्या तारखेला वेगळी रक्कम आधीपासून असल्यास overwrite करण्याआधी confirmation घेतले जाईल. OCR browser मध्येच चालते; screenshot server वर upload होत नाही. OCR साठी internet लागेल.</p>
+              <p class="form-help" style="margin-top:1rem;">Duplicate protection: same date + same amount पुन्हा आल्यास Skip. त्या तारखेला वेगळी रक्कम आधीपासून असल्यास overwrite करण्याआधी confirmation घेतले जाईल. फक्त Total earning वापरली जाते (incentive सहित). OCR browser मध्येच चालते; screenshot server वर upload होत नाही. OCR साठी internet लागेल.</p>
             </div>
 
             <div class="report-card" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.04);">
@@ -4878,17 +4878,26 @@
       }
 
       function parseZomatoDailyScreenshotText(text) {
-        const normalized = String(text || "").replace(/\s+/g, " ").replace(/,/g, "");
-        const dateMatch = normalized.match(/\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/i);
-        const amountMatches = [...normalized.matchAll(/₹\s*([0-9]{1,7}(?:\.[0-9]{1,2})?)/g)];
-        const amount = amountMatches.length ? Number(amountMatches[0][1]) : NaN;
+        const normalized = String(text || "").replace(/,/g, "").replace(/\\s+/g, " ");
+        const monthPattern = "(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)";
+        const dateMatch = normalized.match(new RegExp("\\b(\\d{1,2})\\s+" + monthPattern + "\\b", "i"));
+        const monthNames = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+        const monthShort = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
         let date = "";
         if (dateMatch) {
-          const monthIndex = MONTH_NAMES.findIndex((m) => m.toLowerCase() === dateMatch[2].toLowerCase());
-          const year = new Date().getFullYear();
-          date = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(Number(dateMatch[1])).padStart(2, "0")}`;
+          const monthText = dateMatch[2].toLowerCase();
+          let monthIndex = monthNames.indexOf(monthText);
+          if (monthIndex < 0) monthIndex = monthShort.indexOf(monthText.slice(0,3));
+          if (monthIndex >= 0) {
+            const year = new Date().getFullYear();
+            date = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(Number(dateMatch[1])).padStart(2, "0")}`;
+          }
         }
-        return { date, amount, dateFound: !!dateMatch, amountFound: Number.isFinite(amount) };
+        // The large total is the first currency amount on the Day screen.
+        // If OCR misses the rupee glyph, fall back to the first decimal currency-like number.
+        const currencyMatches = [...normalized.matchAll(/[₹रRs.]*\\s*([0-9]{1,7}\\.[0-9]{1,2})/gi)];
+        const amount = currencyMatches.length ? Number(currencyMatches[0][1]) : NaN;
+        return { date, amount, dateFound: !!date, amountFound: Number.isFinite(amount) };
       }
 
       async function handleZomatoScreenshot(event) {
@@ -4907,16 +4916,13 @@
           try {
             const result = await worker.recognize(file);
             const parsed = parseZomatoDailyScreenshotText(result.data.text);
-            if (!parsed.dateFound && !parsed.amountFound) {
-              throw new Error("Date आणि ₹ total वाचता आले नाहीत. स्पष्ट Day screenshot पुन्हा निवडा.");
-            }
             const dateInput = document.getElementById("screenshot-import-date");
             const amountInput = document.getElementById("screenshot-import-amount");
             dateInput.value = parsed.date || "";
             amountInput.value = parsed.amountFound ? parsed.amount.toFixed(2) : "";
             pendingZomatoScreenshotImport = { fileName: file.name, ocrText: result.data.text };
             preview.style.display = "block";
-            status.textContent = "OCR complete. Import करण्यापूर्वी तारीख आणि रक्कम तपासा.";
+            status.textContent = parsed.dateFound && parsed.amountFound ? "OCR complete. Total earning (incentive सहित) तपासा." : "काही माहिती OCR ला वाचता आली नाही. Date आणि Total earning खाली स्वतः भरा.";
             updateZomatoScreenshotDuplicateHint();
             confirmBtn.disabled = false;
           } finally {
@@ -4949,7 +4955,7 @@
       function resetZomatoScreenshotImport() {
         document.getElementById("zomato-earning-screenshot").value = "";
         document.getElementById("screenshot-import-preview").style.display = "none";
-        document.getElementById("screenshot-ocr-status").textContent = "Ready. फक्त Day tab चा screenshot वापरा; Week/Month summary पुढील update मध्ये.";
+        document.getElementById("screenshot-ocr-status").textContent = "Ready. Day screenshot निवडा. Total earning मध्ये incentive समाविष्ट असते.";
         pendingZomatoScreenshotImport = null;
       }
 
