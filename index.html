@@ -930,6 +930,127 @@
           gap: 0.65rem;
         }
       }
+
+      /* --- PREMIUM LOGIN + MOBILE-FIRST POLISH --- */
+      #auth-screen {
+        background:
+          radial-gradient(ellipse at 15% 15%, rgba(226,55,68,.22), transparent 38%),
+          radial-gradient(ellipse at 85% 85%, rgba(226,55,68,.10), transparent 34%),
+          #08090d;
+        padding: 1.25rem;
+      }
+      .auth-card {
+        max-width: 440px;
+        padding: clamp(1.5rem, 5vw, 2.6rem);
+        border: 1px solid rgba(255,255,255,.11);
+        border-radius: 24px;
+        background: linear-gradient(155deg, rgba(29,31,42,.98), rgba(15,17,24,.98));
+        box-shadow: 0 28px 90px rgba(0,0,0,.62), 0 0 55px rgba(226,55,68,.12);
+        position: relative;
+        overflow: hidden;
+      }
+      .auth-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #e23744, #ff7b65, transparent);
+      }
+      .auth-logo { gap: .7rem; margin-bottom: 1.6rem; }
+      .auth-logo-badge {
+        border-radius: 10px;
+        padding: .48rem .8rem;
+        box-shadow: 0 7px 22px rgba(226,55,68,.28);
+      }
+      .auth-title { font-size: clamp(1.45rem, 4vw, 1.8rem); letter-spacing: -.6px; }
+      .auth-desc { line-height: 1.65; max-width: 34ch; margin: .55rem auto 1.7rem; }
+      .auth-input-group { margin-bottom: 1.15rem; }
+      .auth-input-group label { font-size: .72rem; letter-spacing: .8px; }
+      .auth-input-group input {
+        min-height: 48px;
+        padding: .8rem 1rem;
+        border-radius: 12px;
+        background: rgba(7,9,14,.72);
+      }
+      #login-form .btn-primary {
+        min-height: 49px;
+        border-radius: 12px;
+        font-weight: 800;
+        letter-spacing: .15px;
+        box-shadow: 0 9px 24px rgba(226,55,68,.22);
+      }
+      .auth-hint { border-radius: 12px; line-height: 1.6; }
+
+      @media (max-width: 768px) {
+        html { -webkit-text-size-adjust: 100%; }
+        body { overflow-x: hidden; }
+        header.app-topbar {
+          padding: .75rem .85rem;
+          gap: .65rem;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          backdrop-filter: blur(16px);
+          background: rgba(12,14,19,.94);
+        }
+        .brand-zone { min-width: 0; }
+        .brand-title { font-size: .95rem; }
+        .nav-zone {
+          order: 3;
+          display: flex;
+          overflow-x: auto;
+          justify-content: flex-start;
+          white-space: nowrap;
+          scrollbar-width: none;
+          padding: .55rem 0 0;
+        }
+        .nav-zone::-webkit-scrollbar { display: none; }
+        .nav-link { flex: 0 0 auto; padding: .55rem .75rem; font-size: .76rem; }
+        main.app-viewport { padding: .85rem .65rem 1.5rem; }
+        .toolbar-strip {
+          border-radius: 14px;
+          padding: .8rem;
+          gap: .75rem;
+        }
+        .toolbar-group { flex-wrap: wrap; gap: .45rem; }
+        .toolbar-group .select-input { min-width: 0; flex: 1 1 105px; }
+        .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: .6rem; }
+        .kpi-card { min-width: 0; padding: .85rem; border-radius: 13px; }
+        .kpi-title { font-size: .7rem; }
+        .kpi-value { font-size: clamp(1rem, 4vw, 1.35rem); overflow-wrap: anywhere; }
+        .table-card { border-radius: 13px; }
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-x: contain;
+        }
+        .earning-table { min-width: 850px; }
+        .btn { min-height: 38px; }
+        input, select, textarea, button { font-size: 16px; }
+        .charts-row { gap: .8rem; }
+        .chart-card { padding: .9rem; }
+      }
+      @media (max-width: 480px) {
+        #auth-screen { align-items: center; padding: 1rem; }
+        .auth-card { padding: 1.45rem 1.15rem; border-radius: 20px; }
+        .auth-logo { margin-bottom: 1.25rem; }
+        .auth-logo-badge { font-size: 1rem; }
+        .auth-title { font-size: 1.4rem; }
+        .auth-desc { font-size: .8rem; margin-bottom: 1.35rem; }
+        .auth-hint { font-size: .7rem; }
+        .toolbar-group { width: 100%; }
+        .toolbar-label { width: 100%; }
+        .kpi-grid { gap: .5rem; }
+        .kpi-card { padding: .72rem; }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .auth-card { animation: authCardIn .45s ease-out both; }
+        @keyframes authCardIn {
+          from { opacity: 0; transform: translateY(12px) scale(.985); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      }
     </style>
   </head>
   <body>
