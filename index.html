@@ -1548,6 +1548,66 @@
         .kpi-value { font-size: clamp(1.08rem, 4.2vw, 1.4rem); }
         .kpi-subtext { font-size: .68rem; }
       }
+
+      /* --- MOTI PREMIUM ANALYTICS CHARTS --- */
+      .charts-row { gap: 1.15rem; margin-bottom: 1.4rem; }
+      .chart-card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.35rem;
+        border-radius: 18px;
+        background: linear-gradient(150deg, rgba(31,55,79,.98), rgba(15,33,52,.99));
+        border: 1px solid rgba(214,181,109,.24);
+        box-shadow: 0 15px 34px rgba(2,10,20,.25), inset 0 1px 0 rgba(255,255,255,.045);
+        transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      }
+      .chart-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 18px;
+        right: 18px;
+        height: 3px;
+        border-radius: 0 0 8px 8px;
+        background: linear-gradient(90deg, transparent, #d6b56d, #87364a, transparent);
+        pointer-events: none;
+      }
+      .chart-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(234,214,166,.48);
+        box-shadow: 0 20px 40px rgba(2,10,20,.32);
+      }
+      .chart-header {
+        gap: .8rem;
+        padding-bottom: .9rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(214,181,109,.14);
+      }
+      .chart-title {
+        color: #f0dfb6;
+        font-size: .98rem;
+        font-weight: 800;
+        letter-spacing: -.15px;
+      }
+      .chart-legend { flex-wrap: wrap; gap: .8rem; color: #b9c9da; }
+      .legend-color { width: 9px; height: 9px; border-radius: 3px; box-shadow: 0 0 10px currentColor; }
+      .canvas-wrapper { height: 250px; }
+      #dailyChartCanvas, #shiftDonutCanvas { filter: drop-shadow(0 4px 10px rgba(2,10,20,.12)); }
+      #shift-summary-text {
+        padding: .3rem .65rem;
+        border-radius: 99px;
+        color: #e8d29c;
+        background: rgba(214,181,109,.10);
+        border: 1px solid rgba(214,181,109,.20);
+      }
+      @media (max-width: 768px) {
+        .charts-row { gap: .75rem; }
+        .chart-card { padding: 1rem .85rem; border-radius: 15px; }
+        .chart-header { align-items: flex-start; flex-direction: column; gap: .55rem; }
+        .chart-title { font-size: .9rem; }
+        .canvas-wrapper { height: 220px; }
+        .chart-legend { font-size: .68rem; gap: .65rem; }
+      }
     </style>
   </head>
   <body>
@@ -1752,11 +1812,11 @@
                 <span class="chart-title">Daily Earning vs Daily Target</span>
                 <div class="chart-legend">
                   <div class="legend-item">
-                    <span class="legend-color" style="background: #e23744;"></span>
+                    <span class="legend-color" style="background: #87364a;"></span>
                     <span>Actual Earning</span>
                   </div>
                   <div class="legend-item">
-                    <span class="legend-color" style="background: #f59e0b;"></span>
+                    <span class="legend-color" style="background: #d6b56d;"></span>
                     <span>Daily Target Line</span>
                   </div>
                 </div>
@@ -3562,9 +3622,9 @@
         if (maxVal === 0) maxVal = 2000;
 
         // Draw horizontal grid lines & labels
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+        ctx.strokeStyle = "rgba(185, 201, 218, 0.13)";
         ctx.lineWidth = 1;
-        ctx.fillStyle = "#64748b";
+        ctx.fillStyle = "#9fb3c8";
         ctx.font = "10px JetBrains Mono";
         ctx.textAlign = "right";
 
@@ -3592,9 +3652,9 @@
           if (r.total >= calcData.dailyTarget && r.total > 0) {
             ctx.fillStyle = "#10b981";
           } else if (r.total > 0) {
-            ctx.fillStyle = "#e23744";
+            ctx.fillStyle = "#87364a";
           } else {
-            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.fillStyle = "rgba(159, 179, 200, 0.12)";
           }
 
           // Rounded top bar
@@ -3613,7 +3673,7 @@
 
         // Draw Daily Target Threshold Line
         const targetY = padding.top + chartH - (calcData.dailyTarget / maxVal) * chartH;
-        ctx.strokeStyle = "#f59e0b";
+        ctx.strokeStyle = "#d6b56d";
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
         ctx.beginPath();
@@ -3661,9 +3721,9 @@
         const innerRadius = radius * 0.62;
 
         const segments = [
-          { label: "Zomato", count: zomatoCount, color: "#e23744" },
-          { label: "Other", count: otherCount, color: "#f59e0b" },
-          { label: "Off", count: offCount, color: "#475569" }
+          { label: "Zomato", count: zomatoCount, color: "#87364a" },
+          { label: "Other", count: otherCount, color: "#d6b56d" },
+          { label: "Off", count: offCount, color: "#6e9bbd" }
         ];
 
         let startAngle = -Math.PI / 2;
@@ -3681,12 +3741,12 @@
         });
 
         // Center Text
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#f4e4bd";
         ctx.font = "bold 16px Plus Jakarta Sans";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(`${zomatoCount}`, centerX, centerY - 6);
-        ctx.fillStyle = "#94a3b8";
+        ctx.fillStyle = "#aebfd0";
         ctx.font = "10px Plus Jakarta Sans";
         ctx.fillText("Zomato Shifts", centerX, centerY + 12);
 
@@ -3697,8 +3757,8 @@
 
         const legendItems = [
           { label: `Zomato: ${zomatoCount}`, color: "#e23744" },
-          { label: `Other: ${otherCount}`, color: "#f59e0b" },
-          { label: `Off: ${offCount}`, color: "#475569" }
+          { label: `Other: ${otherCount}`, color: "#d6b56d" },
+          { label: `Off: ${offCount}`, color: "#6e9bbd" }
         ];
 
         const itemSpacing = w / 3;
@@ -3706,7 +3766,7 @@
           const itemX = idx * itemSpacing + 12;
           ctx.fillStyle = item.color;
           ctx.fillRect(itemX, legendY - 8, 8, 8);
-          ctx.fillStyle = "#cbd5e1";
+          ctx.fillStyle = "#c4d2df";
           ctx.fillText(item.label, itemX + 14, legendY);
         });
       }
