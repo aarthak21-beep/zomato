@@ -2957,15 +2957,14 @@
           <div class="form-section" id="tab-backup">
             <div class="report-card" id="screenshot-import-card" style="border-color: rgba(214,181,109,.42); background: linear-gradient(145deg, rgba(19,35,52,.92), rgba(35,24,37,.72));">
               <h4 style="color:#e8cb83;">📸 Partner App Screenshot Import</h4>
-              <p class="form-help" style="margin-bottom:1rem;">कोणत्याही delivery partner app मधील <strong>Day</strong> Earnings screenshot निवडा. फक्त <strong>Total earning</strong> नोंदवली जाईल—Order earning + Incentive + Other earnings यांची एकूण रक्कम. Incentive वेगळे add करण्याची गरज नाही.</p>
+              <p class="form-help" style="margin-bottom:1rem;">कोणत्याही delivery partner app मधील <strong>Day किंवा Week</strong> Earnings screenshot निवडा. Week मध्ये Graph मधील प्रत्येक तारखेची daily total रक्कम import होईल; वरचा weekly total फक्त reference असेल.</p>
               <div class="form-group">
-                <label for="zomato-earning-screenshot">Select Daily Earnings Screenshot</label>
+                <label for="zomato-earning-screenshot">Select Day / Week Earnings Screenshot</label>
                 <input type="file" id="zomato-earning-screenshot" accept="image/*" style="width:100%;padding:.7rem;border:1px solid var(--border-subtle);border-radius:10px;background:var(--bg-input);" />
               </div>
               <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. फक्त Day tab चा screenshot वापरा. Total earning मध्ये incentive समाविष्ट असते.</div>
               <div id="screenshot-import-preview" style="display:none;margin-top:1rem;padding:1rem;border:1px solid rgba(214,181,109,.28);border-radius:12px;background:rgba(5,12,20,.38);">
-                <div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div>
-                <div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div>
+                <div id="screenshot-daily-fields"><div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div><div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div></div><div id="screenshot-weekly-fields" style="display:none;"><p class="form-help">Weekly total import होणार नाही. Graph मधील प्रत्येक दिवसाची रक्कम खाली तपासा.</p><div id="screenshot-weekly-rows"></div></div>
                 <p id="screenshot-import-duplicate" class="form-help" style="margin:.5rem 0 1rem;"></p>
                 <div style="display:flex;gap:.65rem;flex-wrap:wrap;">
                   <button type="button" id="screenshot-import-confirm" class="btn btn-primary btn-sm">✓ Confirm Import</button>
@@ -4878,58 +4877,68 @@
       }
 
       function parseZomatoDailyScreenshotText(text) {
-        const normalized = String(text || "").replace(/,/g, "").replace(/\s+/g, " ");
-        const dateMatch = normalized.match(/\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/i);
-        const monthNames = ["january","february","march","april","may","june","july","august","september","october","november","december"];
-        const monthShort = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
-        let date = "";
-        if (dateMatch) {
-          const monthText = dateMatch[2].toLowerCase();
-          let monthIndex = monthNames.indexOf(monthText);
-          if (monthIndex < 0) monthIndex = monthShort.indexOf(monthText.slice(0,3));
-          if (monthIndex >= 0) {
-            const year = new Date().getFullYear();
-            date = String(year) + "-" + String(monthIndex + 1).padStart(2, "0") + "-" + String(Number(dateMatch[1])).padStart(2, "0");
-          }
+        const normalized=String(text||"").replace(/,/g,"").replace(/\s+/g," ");
+        const m=normalized.match(/\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/i);
+        const months=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+        let date="";
+        if(m){const mi=months.indexOf(m[2].slice(0,3).toLowerCase());if(mi>=0)date=String(new Date().getFullYear())+"-"+String(mi+1).padStart(2,"0")+"-"+String(Number(m[1])).padStart(2,"0");}
+        const am=[...normalized.matchAll(/[₹रRs.]*\s*([0-9]{1,7}\.[0-9]{1,2})/gi)];
+        return {date,amount:am.length?Number(am[0][1]):NaN,dateFound:!!date,amountFound:!!am.length};
+      }
+      function parseZomatoWeeklyScreenshot(text,words,height) {
+        const raw=String(text||"").replace(/,/g,"").replace(/\s+/g," ");
+        const p=raw.match(/\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*[-–]\s*(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})\b/i);
+        if(!p)return null;
+        const ms=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+        const sm=ms.indexOf(p[2].slice(0,3).toLowerCase()),em=ms.indexOf(p[4].slice(0,3).toLowerCase()),yr=Number(p[5]);
+        const start=new Date(yr,sm,Number(p[1])),end=new Date(yr,em,Number(p[3])),h=Number(height||1600);
+        const ws=(words||[]).filter(w=>w&&w.bbox&&w.text).map(w=>({t:String(w.text).trim(),x:(w.bbox.x0+w.bbox.x1)/2,y:(w.bbox.y0+w.bbox.y1)/2}));
+        const ds=ws.filter(o=>/^\d{1,2}$/.test(o.t)&&+o.t>=1&&+o.t<=31&&o.y/h>.59&&o.y/h<.72);
+        const as=ws.filter(o=>o.y/h>.45&&o.y/h<.66&&/[0-9]/.test(o.t)&&!(/^(19|20|21|22|23|24|25)$/.test(o.t)));
+        const rows=[];
+        for(const d of ds){const day=+d.t,dt=new Date(start.getFullYear(),start.getMonth(),day);if(dt<start||dt>end)continue;
+          let best=null,dist=Infinity;for(const a of as){const dx=Math.abs(a.x-d.x);if(a.y<d.y&&dx<dist){best=a;dist=dx;}}
+          if(!best||dist>h*.12)continue;
+          const m=best.t.replace(/[₹रRs,]/gi,"").match(/\d+(?:\.\d{1,2})?/);if(!m)continue;
+          rows.push({date:dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(day).padStart(2,"0"),amount:Number(m[0])});
         }
-        const currencyMatches = [...normalized.matchAll(/[₹रRs.]*\s*([0-9]{1,7}\.[0-9]{1,2})/gi)];
-        const amount = currencyMatches.length ? Number(currencyMatches[0][1]) : NaN;
-        return { date, amount, dateFound: !!date, amountFound: Number.isFinite(amount) };
+        const uniq=[...new Map(rows.map(x=>[x.date,x])).values()].sort((a,b)=>a.date.localeCompare(b.date));
+        return uniq.length?uniq:null;
       }
 
       async function handleZomatoScreenshot(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-        const status = document.getElementById("screenshot-ocr-status");
-        const preview = document.getElementById("screenshot-import-preview");
-        const confirmBtn = document.getElementById("screenshot-import-confirm");
-        preview.style.display = "none";
-        pendingZomatoScreenshotImport = null;
-        status.textContent = "Reading screenshot… पहिल्यांदा OCR library load होण्यासाठी थोडा वेळ लागू शकतो.";
-        confirmBtn.disabled = true;
-        try {
-          const Tesseract = await loadTesseractLibrary();
-          const worker = await Tesseract.createWorker("eng");
-          try {
-            const result = await worker.recognize(file);
-            const parsed = parseZomatoDailyScreenshotText(result.data.text);
-            const dateInput = document.getElementById("screenshot-import-date");
-            const amountInput = document.getElementById("screenshot-import-amount");
-            dateInput.value = parsed.date || "";
-            amountInput.value = parsed.amountFound ? parsed.amount.toFixed(2) : "";
-            pendingZomatoScreenshotImport = { fileName: file.name, ocrText: result.data.text };
-            preview.style.display = "block";
-            status.textContent = parsed.dateFound && parsed.amountFound ? "OCR complete. Total earning (incentive सहित) तपासा." : "काही माहिती OCR ला वाचता आली नाही. Date आणि Total earning खाली स्वतः भरा.";
-            updateZomatoScreenshotDuplicateHint();
-            confirmBtn.disabled = false;
-          } finally {
-            await worker.terminate();
-          }
-        } catch (err) {
-          console.error("Zomato screenshot OCR failed:", err);
-          status.textContent = err.message || "Screenshot वाचता आला नाही.";
-          confirmBtn.disabled = false;
-        }
+        const file=event.target.files&&event.target.files[0];if(!file)return;
+        const status=document.getElementById("screenshot-ocr-status"),preview=document.getElementById("screenshot-import-preview"),btn=document.getElementById("screenshot-import-confirm");
+        preview.style.display="none";pendingZomatoScreenshotImport=null;btn.disabled=true;status.textContent="Reading screenshot…";
+        try{
+          const T=await loadTesseractLibrary(),worker=await T.createWorker("eng");
+          try{
+            const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h);
+            if(weekly){
+              pendingZomatoScreenshotImport={type:"week"};
+              document.getElementById("screenshot-daily-fields").style.display="none";
+              document.getElementById("screenshot-weekly-fields").style.display="block";
+              const host=document.getElementById("screenshot-weekly-rows");host.innerHTML="";
+              weekly.forEach((r,i)=>{
+                const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0";
+                const d=document.createElement("input");d.type="date";d.value=r.date;d.dataset.weekDate=i;
+                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.value=r.amount;a.dataset.weekAmount=i;
+                const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
+                const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
+              });
+              status.textContent="Weekly Graph मधील daily amounts वाचले. प्रत्येक तारीख व रक्कम तपासा; वरचा weekly total import होणार नाही.";
+            }else{
+              document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
+              const daily=parseZomatoDailyScreenshotText(result.data.text);
+              document.getElementById("screenshot-import-date").value=daily.date||"";
+              document.getElementById("screenshot-import-amount").value=daily.amountFound?daily.amount.toFixed(2):"";
+              pendingZomatoScreenshotImport={type:"day"};
+              status.textContent=daily.dateFound&&daily.amountFound?"Daily OCR complete. Total earning तपासा.":"Date/amount स्वतः भरा.";
+              updateZomatoScreenshotDuplicateHint();
+            }
+            preview.style.display="block";btn.disabled=false;
+          }finally{await worker.terminate();}
+        }catch(e){console.error(e);status.textContent=e.message||"Screenshot वाचता आला नाही.";btn.disabled=false;}
       }
 
       function updateZomatoScreenshotDuplicateHint() {
@@ -4952,58 +4961,25 @@
       function resetZomatoScreenshotImport() {
         document.getElementById("zomato-earning-screenshot").value = "";
         document.getElementById("screenshot-import-preview").style.display = "none";
-        document.getElementById("screenshot-ocr-status").textContent = "Ready. Day screenshot निवडा. Total earning मध्ये incentive समाविष्ट असते.";
+        document.getElementById("screenshot-ocr-status").textContent = "Ready. Day किंवा Week screenshot निवडा. Weekly Graph मधील daily amounts घेतले जातील.";
         pendingZomatoScreenshotImport = null;
       }
 
       function confirmZomatoScreenshotImport() {
-        if (!pendingZomatoScreenshotImport) return;
-        const dateValue = document.getElementById("screenshot-import-date").value;
-        const amount = Number(document.getElementById("screenshot-import-amount").value);
-        if (!dateValue || !Number.isFinite(amount) || amount < 0) {
-          showToast("Valid date आणि earning amount भरा.", "error");
-          return;
-        }
-        const [year, month, day] = dateValue.split("-").map(Number);
-        if (year < 2024 || year > 2030 || month < 1 || month > 12 || day < 1 || day > getDaysInMonth(year, month - 1)) {
-          showToast("Date 2024–2030 मधील valid date असावी.", "error");
-          return;
-        }
-        const storageKey = getMonthStorageKey(year, month - 1);
-        let targetMonth;
-        try { targetMonth = JSON.parse(localStorage.getItem(storageKey) || '{"days":{}}'); }
-        catch (e) { targetMonth = { days: {} }; }
-        targetMonth.days = targetMonth.days || {};
-        const existing = Number(targetMonth.days[day]?.zomato || 0);
-        if (existing === amount && existing > 0) {
-          showToast("Duplicate detected — same date आणि amount आधीच आहे. Skip केले.");
-          resetZomatoScreenshotImport();
-          return;
-        }
-        const applyImport = () => {
-          if (year === AppState.currentYear && month - 1 === AppState.currentMonth) {
-            if (!AppState.monthData.days[day]) AppState.monthData.days[day] = { shift1: "Off", shift2: "Off", shift3: "Off", zomato: 0 };
-            AppState.monthData.days[day].zomato = amount;
-            saveMonthData(year, month - 1);
-            renderAll();
-          } else {
-            if (!targetMonth.monthlyTarget) targetMonth.monthlyTarget = AppState.settings.defaultMonthlyTarget;
-            targetMonth.days[day] = { ...(targetMonth.days[day] || { shift1: "Off", shift2: "Off", shift3: "Off" }), zomato: amount };
-            localStorage.setItem(storageKey, JSON.stringify(targetMonth));
-            pushMonthDataToServer(year, month - 1);
-          }
-          showToast(`Imported ₹${amount.toFixed(2)} for ${String(day).padStart(2, "0")}-${MONTH_SHORT[month - 1]}-${year}`);
-          resetZomatoScreenshotImport();
-        };
-        if (existing > 0) {
-          showConfirmModal(
-            "Replace Existing Earning?",
-            `This date already has ₹${existing.toFixed(2)}. Replace it with ₹${amount.toFixed(2)}?`,
-            applyImport
-          );
-        } else {
-          applyImport();
-        }
+        if(!pendingZomatoScreenshotImport)return;
+        const rows=pendingZomatoScreenshotImport.type==="week"
+          ? [...document.querySelectorAll("#screenshot-weekly-rows input[data-week-date]")].map((d,i)=>({date:d.value,amount:Number(document.querySelector('#screenshot-weekly-rows input[data-week-amount="'+i+'"]').value)}))
+          : [{date:document.getElementById("screenshot-import-date").value,amount:Number(document.getElementById("screenshot-import-amount").value)}];
+        if(!rows.length||rows.some(r=>!r.date||!Number.isFinite(r.amount)||r.amount<0)){showToast("सर्व तारखा आणि रक्कम योग्य भरा.","error");return;}
+        const seen=new Set();for(const r of rows){if(seen.has(r.date)){showToast("Duplicate date row आहे.","error");return;}seen.add(r.date);const[y,m,d]=r.date.split("-").map(Number);if(y<2024||y>2030||m<1||m>12||d<1||d>getDaysInMonth(y,m-1)){showToast("Valid date निवडा.","error");return;}}
+        const changes=[],dups=[];
+        rows.forEach(r=>{const[y,m,d]=r.date.split("-").map(Number);let md;try{md=JSON.parse(localStorage.getItem(getMonthStorageKey(y,m-1))||'{"days":{}}');}catch(e){md={days:{}};}const old=Number(md?.days?.[d]?.zomato||0);if(old===r.amount&&old>0)dups.push(r);else changes.push({...r,y,m:m-1,d,old});});
+        if(!changes.length){showToast("सर्व entries आधीच आहेत. Duplicate skip केले.");resetZomatoScreenshotImport();return;}
+        const apply=()=>{const affected=new Set();changes.forEach(r=>{const key=getMonthStorageKey(r.y,r.m);let md=(r.y===AppState.currentYear&&r.m===AppState.currentMonth)?AppState.monthData:JSON.parse(localStorage.getItem(key)||'{"days":{}}');md.days=md.days||{};if(!md.days[r.d])md.days[r.d]={shift1:"Off",shift2:"Off",shift3:"Off",zomato:0};md.days[r.d].zomato=r.amount;if(md!==AppState.monthData){if(!md.monthlyTarget)md.monthlyTarget=AppState.settings.defaultMonthlyTarget;localStorage.setItem(key,JSON.stringify(md));}affected.add(r.y+"-"+r.m);});
+          if(affected.has(AppState.currentYear+"-"+AppState.currentMonth)){saveMonthData(AppState.currentYear,AppState.currentMonth);renderAll();}
+          affected.forEach(k=>{const[y,m]=k.split("-").map(Number);if(!(y===AppState.currentYear&&m===AppState.currentMonth))pushMonthDataToServer(y,m);});
+          showToast("Imported "+changes.length+" daily entries; "+dups.length+" duplicate(s) skipped.");resetZomatoScreenshotImport();};
+        const overwrite=changes.filter(r=>r.old>0);if(overwrite.length)showConfirmModal("Replace Existing Earnings?",overwrite.length+" date(s) already have entries. Replace them?",apply);else apply();
       }
 
       function handleJSONRestore(event) {
