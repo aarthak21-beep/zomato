@@ -259,6 +259,146 @@
         text-align: left;
       }
 
+      /* Premium MOTI login refresh */
+      #auth-screen {
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 18% 18%, rgba(226,55,68,.22), transparent 38%),
+          radial-gradient(ellipse at 84% 82%, rgba(202,169,112,.12), transparent 34%),
+          linear-gradient(135deg, #08090d 0%, #111018 48%, #090a0e 100%);
+      }
+      #auth-screen::before,
+      #auth-screen::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        border-radius: 50%;
+        filter: blur(2px);
+      }
+      #auth-screen::before {
+        width: 340px;
+        height: 340px;
+        top: -190px;
+        right: -110px;
+        border: 1px solid rgba(255,255,255,.09);
+        box-shadow: 0 0 0 34px rgba(255,255,255,.018), 0 0 0 70px rgba(255,255,255,.012);
+      }
+      #auth-screen::after {
+        width: 260px;
+        height: 260px;
+        bottom: -170px;
+        left: -90px;
+        border: 1px solid rgba(226,55,68,.22);
+        box-shadow: 0 0 0 30px rgba(226,55,68,.025), 0 0 0 62px rgba(226,55,68,.018);
+      }
+      .auth-card {
+        position: relative;
+        z-index: 1;
+        max-width: 430px;
+        padding: 2.6rem 2.35rem 2rem;
+        overflow: hidden;
+        background: linear-gradient(155deg, rgba(31,32,40,.96), rgba(15,16,22,.98) 68%);
+        border: 1px solid rgba(255,255,255,.11);
+        border-radius: 24px;
+        box-shadow: 0 30px 90px rgba(0,0,0,.72), 0 0 55px rgba(226,55,68,.12), inset 0 1px 0 rgba(255,255,255,.07);
+        backdrop-filter: blur(18px);
+      }
+      .auth-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 12%;
+        right: 12%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #e23744, #f1d7a1, transparent);
+        opacity: .95;
+      }
+      .auth-logo {
+        margin-bottom: 1.55rem;
+      }
+      .auth-logo-badge {
+        padding: .48rem 1rem;
+        font-size: 1.65rem;
+        letter-spacing: -.8px;
+        border-radius: 13px;
+        background: linear-gradient(145deg, #f04452, #b91f32);
+        border: 1px solid rgba(255,255,255,.2);
+        box-shadow: 0 9px 25px rgba(226,55,68,.28), inset 0 1px 0 rgba(255,255,255,.25);
+      }
+      .auth-title {
+        font-size: clamp(1.45rem, 4vw, 1.75rem);
+        letter-spacing: -.65px;
+        line-height: 1.2;
+        margin-bottom: .55rem;
+        background: linear-gradient(100deg, #fff 20%, #f2dfc1 85%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .auth-desc {
+        max-width: 310px;
+        margin: 0 auto 1.8rem;
+        line-height: 1.65;
+        color: #a9a9b5;
+      }
+      .auth-input-group {
+        margin-bottom: 1.15rem;
+      }
+      .auth-input-group label {
+        color: #d5d2d5;
+        font-size: .72rem;
+        letter-spacing: 1px;
+      }
+      .auth-input-group input {
+        min-height: 48px;
+        padding: .78rem 1rem;
+        border-radius: 12px;
+        background: rgba(7,8,12,.72);
+        border-color: rgba(255,255,255,.1);
+        transition: border-color .2s, box-shadow .2s, background .2s;
+      }
+      .auth-input-group input:focus {
+        background: rgba(7,8,12,.92);
+        border-color: rgba(226,55,68,.8);
+        box-shadow: 0 0 0 4px rgba(226,55,68,.13), 0 5px 18px rgba(0,0,0,.2);
+      }
+      #login-form .btn-primary {
+        min-height: 49px;
+        border-radius: 12px;
+        font-weight: 800;
+        letter-spacing: .2px;
+        background: linear-gradient(100deg, #e23744, #c51f35);
+        box-shadow: 0 10px 24px rgba(226,55,68,.23), inset 0 1px 0 rgba(255,255,255,.18);
+        transition: transform .2s, box-shadow .2s, filter .2s;
+      }
+      #login-form .btn-primary:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+        box-shadow: 0 14px 30px rgba(226,55,68,.32);
+      }
+      #forgot-password-btn {
+        min-height: 40px;
+        border-radius: 11px;
+        border-color: rgba(255,255,255,.1);
+        color: #c9c5ca;
+      }
+      .auth-powered-by {
+        margin-top: 1.75rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,.07);
+        color: #777783;
+        font-size: .72rem;
+        letter-spacing: .3px;
+      }
+      .auth-powered-by strong {
+        color: #e7d3ad;
+        font-weight: 700;
+      }
+      @media (max-width: 480px) {
+        #auth-screen { padding: 1rem; }
+        .auth-card { padding: 2.15rem 1.35rem 1.6rem; border-radius: 20px; }
+      }
+
       /* --- APP LAYOUT --- */
       #app-container {
         display: none; /* revealed on login */
