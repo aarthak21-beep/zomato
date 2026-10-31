@@ -1093,6 +1093,7 @@
             Sign In to Dashboard
           </button>
         </form>
+        <button type="button" id="forgot-password-btn" class="btn btn-secondary btn-sm" style="width:100%; margin-top:.8rem;">Forgot Password?</button>
 
         <div class="auth-powered-by">Powered by <strong>Moti Technologies</strong></div>
       </div>
@@ -1564,7 +1565,12 @@
                 <label for="cfg-confirm-password">Confirm New Password</label>
                 <input type="password" id="cfg-confirm-password" placeholder="Confirm new password" />
               </div>
-              <button id="save-account-btn" class="btn btn-primary">Update Credentials</button>
+              <hr style="border:0; border-top:1px solid var(--border-subtle); margin:1.2rem 0;" />
+              <h4 style="margin-bottom:.4rem;">Password Recovery PIN</h4>
+              <p class="form-help" style="margin-bottom:.8rem;">Set a 4–8 digit PIN now. If you forget your password, use this PIN on this device to reset it. Set the same PIN separately on your other devices.</p>
+              <div class="form-group"><label for="cfg-recovery-pin">Recovery PIN</label><input type="password" id="cfg-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Choose 4–8 digit PIN" autocomplete="new-password" /></div>
+              <div class="form-group"><label for="cfg-confirm-recovery-pin">Confirm Recovery PIN</label><input type="password" id="cfg-confirm-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Confirm recovery PIN" autocomplete="new-password" /></div>
+              <button id="save-account-btn" class="btn btn-primary">Update Credentials &amp; Recovery PIN</button>
             </div>
           </div>
 
@@ -1702,6 +1708,21 @@
       </div>
     </div>
 
+    <!-- Forgot Password Recovery Modal -->
+    <div class="modal-backdrop" id="modal-forgot-password">
+      <div class="modal-box" style="max-width:440px;">
+        <div class="modal-header"><div class="modal-title">Reset Password</div><button class="modal-close" data-close="modal-forgot-password">&times;</button></div>
+        <div class="modal-body">
+          <p class="form-help" style="margin-bottom:1rem;">Enter your username and the Recovery PIN you previously saved in Settings on this device.</p>
+          <div class="form-group"><label for="reset-username">Username</label><input type="text" id="reset-username" autocomplete="username" placeholder="Enter username" /></div>
+          <div class="form-group"><label for="reset-recovery-pin">Recovery PIN</label><input type="password" id="reset-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Enter 4–8 digit PIN" /></div>
+          <div class="form-group"><label for="reset-new-password">New Password</label><input type="password" id="reset-new-password" autocomplete="new-password" placeholder="At least 6 characters" /></div>
+          <div class="form-group"><label for="reset-confirm-password">Confirm New Password</label><input type="password" id="reset-confirm-password" autocomplete="new-password" placeholder="Re-enter new password" /></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-close="modal-forgot-password">Cancel</button><button id="reset-password-submit" class="btn btn-primary">Reset Password</button></div>
+      </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
@@ -1744,6 +1765,7 @@
         auth: {
           username: "rider",
           passwordHash: "zomato2026",
+          recoveryPin: "",
           isLoggedIn: false
         },
         settings: {
@@ -1813,6 +1835,7 @@
             const parsed = JSON.parse(authRaw);
             AppState.auth.username = parsed.username || "rider";
             AppState.auth.passwordHash = parsed.passwordHash || "zomato2026";
+            AppState.auth.recoveryPin = parsed.recoveryPin || "";
             AppState.auth.isLoggedIn = !!parsed.isLoggedIn;
           }
 
@@ -1979,6 +2002,7 @@
           localStorage.setItem("zomato_auth", JSON.stringify({
             username: AppState.auth.username,
             passwordHash: AppState.auth.passwordHash,
+            recoveryPin: AppState.auth.recoveryPin || "",
             isLoggedIn: AppState.auth.isLoggedIn
           }));
           localStorage.setItem("zomato_settings", JSON.stringify(AppState.settings));
@@ -2103,6 +2127,42 @@
       function setupEventListeners() {
         // Auth Form
         const loginForm = document.getElementById("login-form");
+        document.getElementById("forgot-password-btn").addEventListener("click", () => {
+          ["reset-username", "reset-recovery-pin", "reset-new-password", "reset-confirm-password"].forEach((id) => {
+            document.getElementById(id).value = "";
+          });
+          document.getElementById("modal-forgot-password").classList.add("open");
+        });
+
+        document.getElementById("reset-password-submit").addEventListener("click", () => {
+          const user = document.getElementById("reset-username").value.trim();
+          const pin = document.getElementById("reset-recovery-pin").value.trim();
+          const newPass = document.getElementById("reset-new-password").value;
+          const confirmPass = document.getElementById("reset-confirm-password").value;
+          if (!AppState.auth.recoveryPin) {
+            showToast("No Recovery PIN is set on this device. Use a device where you are logged in to set one first.", "error");
+            return;
+          }
+          if (user !== AppState.auth.username || pin !== AppState.auth.recoveryPin) {
+            showToast("Username or Recovery PIN is incorrect", "error");
+            return;
+          }
+          if (newPass.length < 6) {
+            showToast("New password must be at least 6 characters", "error");
+            return;
+          }
+          if (newPass !== confirmPass) {
+            showToast("New passwords do not match", "error");
+            return;
+          }
+          AppState.auth.passwordHash = newPass;
+          AppState.auth.isLoggedIn = false;
+          savePersistedSettings();
+          document.getElementById("modal-forgot-password").classList.remove("open");
+          document.getElementById("login-password").value = "";
+          showToast("Password reset successfully. Please sign in with your new password.");
+        });
+
         loginForm.addEventListener("submit", (e) => {
           e.preventDefault();
           const user = document.getElementById("login-username").value.trim();
@@ -2349,11 +2409,25 @@
             AppState.auth.passwordHash = pass;
           }
 
+          const recoveryPin = document.getElementById("cfg-recovery-pin").value.trim();
+          const confirmRecoveryPin = document.getElementById("cfg-confirm-recovery-pin").value.trim();
+          if (pass) {
+            if (pass.length < 6) { showToast("Password must be at least 6 characters", "error"); return; }
+            if (pass !== confirmPass) { showToast("New passwords do not match", "error"); return; }
+            AppState.auth.passwordHash = pass;
+          }
+          if (recoveryPin || confirmRecoveryPin) {
+            if (!/^\d{4,8}$/.test(recoveryPin)) { showToast("Recovery PIN must be 4–8 digits", "error"); return; }
+            if (recoveryPin !== confirmRecoveryPin) { showToast("Recovery PINs do not match", "error"); return; }
+            AppState.auth.recoveryPin = recoveryPin;
+          }
           AppState.auth.username = user;
           savePersistedSettings();
           document.getElementById("cfg-new-password").value = "";
           document.getElementById("cfg-confirm-password").value = "";
-          showToast("Account credentials updated successfully!");
+          document.getElementById("cfg-recovery-pin").value = "";
+          document.getElementById("cfg-confirm-recovery-pin").value = "";
+          showToast("Account credentials and recovery settings updated!");
         });
 
         // Google Sheets connection settings
@@ -2486,6 +2560,8 @@
         document.getElementById("cfg-rounding-mode").value = AppState.settings.rounding || "round";
         document.getElementById("cfg-formula-total").value = AppState.settings.formulaTotal || "zomato_only";
         document.getElementById("cfg-username").value = AppState.auth.username;
+        document.getElementById("cfg-recovery-pin").value = "";
+        document.getElementById("cfg-confirm-recovery-pin").value = "";
         const cloudConfig = getGoogleSyncConfig();
         document.getElementById("cfg-google-sheet-url").value = cloudConfig.url || "";
         document.getElementById("cfg-google-sheet-key").value = cloudConfig.key || "";
@@ -3245,7 +3321,8 @@
           settings: AppState.settings,
           auth: {
             username: AppState.auth.username,
-            passwordHash: AppState.auth.passwordHash
+            passwordHash: AppState.auth.passwordHash,
+            recoveryPin: AppState.auth.recoveryPin || ""
           },
           allMonths: {}
         };
@@ -3290,6 +3367,7 @@
             if (data.auth) {
               AppState.auth.username = data.auth.username || AppState.auth.username;
               AppState.auth.passwordHash = data.auth.passwordHash || AppState.auth.passwordHash;
+              AppState.auth.recoveryPin = data.auth.recoveryPin || AppState.auth.recoveryPin || "";
               localStorage.setItem("zomato_auth", JSON.stringify(AppState.auth));
             }
 
