@@ -1608,6 +1608,109 @@
         .canvas-wrapper { height: 220px; }
         .chart-legend { font-size: .68rem; gap: .65rem; }
       }
+
+      /* --- MOTI PREMIUM MONTHLY EARNING CALENDAR --- */
+      .earning-calendar-card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.3rem;
+        border-radius: 19px;
+        background:
+          radial-gradient(ellipse at 100% 0%, rgba(135,54,74,.16), transparent 42%),
+          linear-gradient(145deg, #1d354d, #11263b 78%);
+        border: 1px solid rgba(214,181,109,.28);
+        box-shadow: 0 16px 36px rgba(2,10,20,.26), inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      .earning-calendar-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 18px;
+        right: 18px;
+        height: 3px;
+        border-radius: 0 0 8px 8px;
+        background: linear-gradient(90deg, transparent, #d6b56d, #87364a, transparent);
+        pointer-events: none;
+      }
+      .earning-calendar-head {
+        position: relative;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(214,181,109,.17);
+      }
+      .earning-calendar-head .chart-title {
+        color: #f0dfb6;
+        font-size: 1.05rem;
+        font-weight: 800;
+      }
+      #calendar-month-total {
+        color: #e8cb83;
+        font-size: clamp(1.05rem, 2.3vw, 1.5rem);
+        font-weight: 850;
+        padding: .55rem .85rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(214,181,109,.15), rgba(135,54,74,.16));
+        border: 1px solid rgba(214,181,109,.28);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+        white-space: nowrap;
+      }
+      .earning-calendar-weekday {
+        color: #d7c18f;
+        font-weight: 800;
+        letter-spacing: .4px;
+        padding: .5rem 0;
+      }
+      .earning-calendar-day {
+        position: relative;
+        min-height: 82px;
+        padding: .55rem;
+        border-radius: 12px;
+        background: rgba(6,19,33,.34);
+        border: 1px solid rgba(173,196,218,.14);
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+      }
+      .earning-calendar-day:not(.empty):hover {
+        transform: translateY(-2px);
+        border-color: rgba(234,214,166,.52);
+        box-shadow: 0 7px 16px rgba(2,10,20,.22);
+      }
+      .earning-calendar-day .day-num { color: #b8c9d9; font-weight: 700; }
+      .earning-calendar-day .day-amount { color: #f0dfb6; font-weight: 850; }
+      .earning-calendar-day.low-entry {
+        background: linear-gradient(145deg, rgba(135,54,74,.30), rgba(74,31,48,.25));
+        border-color: rgba(190,105,125,.42);
+      }
+      .earning-calendar-day.mid-entry {
+        background: linear-gradient(145deg, rgba(214,181,109,.22), rgba(91,71,39,.17));
+        border-color: rgba(214,181,109,.44);
+      }
+      .earning-calendar-day.good-entry {
+        background: linear-gradient(145deg, rgba(35,111,91,.30), rgba(17,65,57,.24));
+        border-color: rgba(91,177,145,.42);
+      }
+      .earning-calendar-day.today {
+        outline: 2px solid #d6b56d;
+        outline-offset: 1px;
+        box-shadow: 0 0 0 4px rgba(214,181,109,.10);
+      }
+      .calendar-legend {
+        padding-top: .9rem;
+        border-top: 1px solid rgba(214,181,109,.14);
+        color: #b9c9da;
+      }
+      .calendar-legend .calendar-dot {
+        box-shadow: 0 0 9px currentColor;
+      }
+      @media(max-width:600px) {
+        .earning-calendar-card { padding: .9rem .72rem; border-radius: 15px; }
+        .earning-calendar-head { align-items: flex-start; }
+        .earning-calendar-head .chart-title { font-size: .9rem; }
+        #calendar-month-total { padding: .42rem .55rem; font-size: .92rem; border-radius: 9px; }
+        .earning-calendar-grid { gap: .24rem; }
+        .earning-calendar-day { min-height: 64px; padding: .32rem .25rem; border-radius: 8px; }
+        .earning-calendar-day .day-amount { font-size: .62rem; }
+        .calendar-legend { gap: .55rem; font-size: .65rem; }
+      }
     </style>
   </head>
   <body>
@@ -1840,7 +1943,7 @@
           <div class="earning-calendar-card">
             <div class="earning-calendar-head"><div><div class="chart-title">Monthly Earning Calendar</div><div class="table-meta-text">Daily earning at a glance · color indicates performance against daily target</div></div><strong id="calendar-month-total" class="tabular-nums">₹0</strong></div>
             <div id="earning-calendar-grid" class="earning-calendar-grid" aria-label="Monthly earning calendar"></div>
-            <div class="calendar-legend"><span><i class="calendar-dot" style="background:rgba(231,76,60,.8)"></i>Below target</span><span><i class="calendar-dot" style="background:rgba(245,158,11,.8)"></i>Near target</span><span><i class="calendar-dot" style="background:rgba(16,185,129,.8)"></i>Target met</span><span><i class="calendar-dot" style="background:rgba(255,255,255,.2)"></i>No earning</span></div>
+            <div class="calendar-legend"><span><i class="calendar-dot" style="background:#a95b70"></i>Below target</span><span><i class="calendar-dot" style="background:#d6b56d"></i>Near target</span><span><i class="calendar-dot" style="background:#5bb191"></i>Target met</span><span><i class="calendar-dot" style="background:#6e9bbd"></i>No earning</span></div>
           </div>
 
           <!-- Exact Master Table Format (12 Columns) -->
