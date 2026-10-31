@@ -3513,7 +3513,7 @@
         const months = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          const match = key && key.match(/^zomato_data_(\\d{4})_(\\d{1,2})$/);
+          const match = key && key.match(/^zomato_data_(\d{4})_(\d{1,2})$/);
           if (!match) continue;
           const year = Number(match[1]);
           const month = Number(match[2]);
