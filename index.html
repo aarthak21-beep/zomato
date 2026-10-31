@@ -1857,6 +1857,85 @@
         .earning-calendar-day .day-amount { font-size: .62rem; }
         .calendar-legend { gap: .55rem; font-size: .65rem; }
       }
+      /* MOTI PREMIUM NAVIGATION, DASHBOARD & REPORTS */
+      .nav-zone { gap: .65rem; }
+      .nav-link {
+        padding: .58rem .82rem;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        transition: background .18s ease, color .18s ease, border-color .18s ease;
+      }
+      .nav-link:hover {
+        color: #f3dfb0;
+        background: rgba(135,54,74,.15);
+        border-color: rgba(214,181,109,.13);
+      }
+      .nav-link.active {
+        color: #f5dfaa;
+        background: linear-gradient(135deg,rgba(135,54,74,.25),rgba(214,181,109,.08));
+        border-color: rgba(214,181,109,.24);
+      }
+      .nav-link.active::after { display: none; }
+      .toolbar-strip {
+        background: linear-gradient(115deg,rgba(27,51,74,.94),rgba(16,34,53,.94) 62%,rgba(49,35,51,.72));
+        border-color: rgba(214,181,109,.23);
+        box-shadow: 0 10px 28px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.035);
+      }
+      .toolbar-label { color: #d8c79e; }
+      .select-input, .text-input {
+        background: rgba(5,16,29,.62);
+        border-color: rgba(180,202,226,.2);
+        transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      }
+      .select-input:hover, .text-input:hover { border-color: rgba(214,181,109,.4); }
+      .report-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(145deg,rgba(27,49,71,.92),rgba(14,30,47,.96));
+        border-color: rgba(214,181,109,.2);
+        box-shadow: 0 9px 24px rgba(0,0,0,.13), inset 0 1px 0 rgba(255,255,255,.035);
+        transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      }
+      .report-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 1rem; right: 1rem; height: 2px;
+        background: linear-gradient(90deg,transparent,rgba(214,181,109,.72),transparent);
+        pointer-events: none;
+      }
+      .report-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(214,181,109,.38);
+        box-shadow: 0 14px 28px rgba(0,0,0,.2);
+      }
+      .report-card h4 {
+        color: #f0dba8;
+        border-bottom-color: rgba(214,181,109,.2);
+      }
+      .status-pill-save {
+        padding: .38rem .65rem;
+        border-radius: 999px;
+        background: rgba(16,185,129,.08);
+        border: 1px solid rgba(16,185,129,.16);
+      }
+      .status-dot-green { box-shadow: 0 0 8px rgba(16,185,129,.55); }
+      .progress-container {
+        background: rgba(5,15,27,.65);
+        border: 1px solid rgba(180,202,226,.1);
+        overflow: hidden;
+      }
+      .chart-legend { color: #c0cede; }
+      #toast-container .toast {
+        border: 1px solid rgba(214,181,109,.25);
+        box-shadow: 0 12px 30px rgba(0,0,0,.3);
+        backdrop-filter: blur(12px);
+      }
+      @media(max-width:768px) {
+        .nav-zone { gap: .35rem; }
+        .nav-link { border-radius: 8px; }
+        .toolbar-strip { padding: .9rem; border-radius: 14px; }
+        .report-card { padding: 1rem; border-radius: 13px; }
+      }
     </style>
   </head>
   <body>
