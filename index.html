@@ -4905,6 +4905,38 @@
         return rows;
       }
 
+      async function readWeeklyGraphAmounts(file, worker, count) {
+        const bitmap = await createImageBitmap(file);
+        const w = bitmap.width, h = bitmap.height;
+        const centers = [0.135,0.257,0.378,0.499,0.621,0.742,0.864];
+        const cropW = Math.round(w * 0.15), cropH = Math.round(h * 0.145);
+        const top = Math.round(h * 0.515);
+        const angle = 25 * Math.PI / 180;
+        const outW = Math.ceil(cropW * Math.cos(angle) + cropH * Math.sin(angle));
+        const outH = Math.ceil(cropW * Math.sin(angle) + cropH * Math.cos(angle));
+        const values = [];
+        try {
+          for (let i=0; i<count; i++) {
+            const sx = Math.max(0, Math.min(w-cropW, Math.round(w*centers[i]-cropW/2)));
+            const source = document.createElement("canvas");
+            source.width=cropW; source.height=cropH;
+            source.getContext("2d").drawImage(bitmap,sx,top,cropW,cropH,0,0,cropW,cropH);
+            const rotated=document.createElement("canvas");
+            rotated.width=outW; rotated.height=outH;
+            const ctx=rotated.getContext("2d");
+            ctx.fillStyle="#ffffff";ctx.fillRect(0,0,outW,outH);
+            ctx.translate(outW/2,outH/2);ctx.rotate(angle);
+            ctx.drawImage(source,-cropW/2,-cropH/2);
+            const result=await worker.recognize(rotated);
+            const text=String(result.data.text||"").replace(/,/g,"");
+            const candidates=[...text.matchAll(/\b(\d{1,4})(?:\.\d{1,2})?\b/g)]
+              .map(m=>Number(m[0])).filter(n=>Number.isFinite(n)&&n<=9999);
+            values.push(candidates.length?candidates.sort((a,b)=>b-a)[0]:"");
+          }
+        } finally { bitmap.close(); }
+        return values;
+      }
+
       async function handleZomatoScreenshot(event) {
         const file=event.target.files&&event.target.files[0];if(!file)return;
         const status=document.getElementById("screenshot-ocr-status"),preview=document.getElementById("screenshot-import-preview"),btn=document.getElementById("screenshot-import-confirm");
@@ -4914,6 +4946,9 @@
           try{
             const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h,result.data.imageSize?.w);
             if(weekly){
+              status.textContent="Weekly Graph मधील सात Amount वेगवेगळे वाचत आहे…";
+              const graphAmounts=await readWeeklyGraphAmounts(file,worker,weekly.length);
+              weekly.forEach((row,i)=>row.amount=graphAmounts[i]);
               pendingZomatoScreenshotImport={type:"week"};
               document.getElementById("screenshot-daily-fields").style.display="none";
               document.getElementById("screenshot-weekly-fields").style.display="block";
@@ -4921,11 +4956,11 @@
               weekly.forEach((r,i)=>{
                 const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0";
                 const d=document.createElement("input");d.type="date";d.value=r.date;d.dataset.weekDate=i;
-                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.placeholder="Graph amount भरा";a.value=r.amount;a.dataset.weekAmount=i;
+                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.placeholder="Graph amount तपासा";a.value=r.amount;a.dataset.weekAmount=i;
                 const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
-              status.textContent="सातही तारखा वाचल्या. Graph मधील वाकडे Amount OCR चुकीचे वाचू शकतो, म्हणून Amount रिकामे ठेवले आहेत—Graph पाहून भरा. Weekly total import होणार नाही.";
+              status.textContent="Graph मधील Amount वेगवेगळे OCR ने वाचले. प्रत्येक रक्कम तपासा; रिकामी असल्यास भरा. Weekly total import होणार नाही.";
             }else{
               document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
               const daily=parseZomatoDailyScreenshotText(result.data.text);
