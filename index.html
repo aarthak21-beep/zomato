@@ -1344,6 +1344,116 @@
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
       }
+
+      /* --- MOTI PREMIUM THEME: MIDNIGHT BLUE + BURGUNDY + GOLD --- */
+      :root {
+        --bg-main: #0b1725;
+        --bg-surface: #122338;
+        --bg-card: #192d43;
+        --bg-card-hover: #203951;
+        --bg-input: #102033;
+        --border-subtle: rgba(183, 202, 224, .12);
+        --border-strong: rgba(214, 181, 109, .34);
+        --zomato-red: #87364a;
+        --zomato-red-hover: #a4475d;
+        --zomato-red-muted: rgba(135, 54, 74, .18);
+        --zomato-red-border: rgba(174, 91, 111, .42);
+        --gold-premium: #d6b56d;
+        --gold-soft: #ead6a6;
+        --shadow-card: 0 14px 34px rgba(2, 10, 20, .24);
+      }
+      body {
+        background:
+          radial-gradient(ellipse at 12% 0%, rgba(47, 83, 117, .20), transparent 38%),
+          radial-gradient(ellipse at 92% 12%, rgba(135, 54, 74, .11), transparent 34%),
+          var(--bg-main);
+      }
+      .app-topbar {
+        background: rgba(13, 29, 47, .94);
+        border-bottom-color: rgba(214, 181, 109, .20);
+      }
+      .brand-badge, .nav-link.active {
+        background: linear-gradient(135deg, #87364a, #64283b);
+        border-color: rgba(214, 181, 109, .38);
+      }
+      .nav-link.active { color: #fff; }
+      .nav-link.active::after { background: var(--gold-premium); }
+      .toolbar-strip, .table-card, .chart-card, .report-history-card,
+      .earning-calendar-card, .report-card, .progress-container {
+        background: linear-gradient(145deg, rgba(27, 48, 70, .98), rgba(17, 35, 55, .98));
+        border: 1px solid rgba(214, 181, 109, .20);
+        box-shadow: 0 12px 30px rgba(2, 10, 20, .20), inset 0 1px 0 rgba(255,255,255,.035);
+      }
+      .kpi-card {
+        background: linear-gradient(145deg, #203951, #172b40);
+        border: 1px solid rgba(214, 181, 109, .22);
+        box-shadow: 0 9px 22px rgba(2, 10, 20, .18), inset 0 1px 0 rgba(255,255,255,.04);
+        overflow: hidden;
+      }
+      .kpi-card::before, .report-card::before, .chart-card::before {
+        content: "";
+        display: block;
+        height: 2px;
+        position: absolute;
+        top: 0;
+        left: 1rem;
+        right: 1rem;
+        background: linear-gradient(90deg, transparent, rgba(214,181,109,.72), transparent);
+        pointer-events: none;
+      }
+      .kpi-card:hover {
+        border-color: rgba(234, 214, 166, .52);
+        background: linear-gradient(145deg, #27445f, #1b334b);
+        box-shadow: 0 15px 30px rgba(2, 10, 20, .28);
+        transform: translateY(-3px);
+      }
+      .report-card, .chart-card { position: relative; }
+      .kpi-title, .toolbar-label, .chart-legend { color: #b9c9da; }
+      .kpi-value, .chart-title, .table-heading, .report-card h4,
+      .modal-title { color: var(--gold-soft); }
+      .table-top-actions, .report-history-table th,
+      .modal-header { border-color: rgba(214,181,109,.18); }
+      .earning-calendar-day {
+        background: rgba(7, 20, 34, .30);
+        border-color: rgba(183,202,224,.13);
+      }
+      .earning-calendar-day.today {
+        border-color: var(--gold-premium);
+        box-shadow: inset 0 0 0 1px rgba(214,181,109,.25);
+      }
+      .settings-tab-btn.active { border-bottom-color: var(--gold-premium); color: var(--gold-soft); }
+      .select-input:focus, .text-input:focus, input:focus, select:focus, textarea:focus {
+        border-color: rgba(214,181,109,.65);
+        box-shadow: 0 0 0 3px rgba(214,181,109,.10);
+      }
+      .btn-primary, #login-form .btn-primary {
+        background: linear-gradient(135deg, #963e53, #6f2b40);
+        border: 1px solid rgba(234,214,166,.34);
+        box-shadow: 0 8px 22px rgba(76, 25, 43, .28);
+      }
+      .btn-primary:hover, #login-form .btn-primary:hover {
+        background: linear-gradient(135deg, #ad4c63, #81344b);
+      }
+      #auth-screen {
+        background:
+          radial-gradient(ellipse at 18% 15%, rgba(48, 88, 124, .40), transparent 42%),
+          radial-gradient(ellipse at 82% 82%, rgba(135, 54, 74, .24), transparent 38%),
+          linear-gradient(145deg, #0b1725, #13263b 58%, #0c1b2c);
+      }
+      .auth-card {
+        background: linear-gradient(150deg, rgba(28, 48, 69, .97), rgba(14, 30, 48, .98));
+        border-color: rgba(214,181,109,.30);
+        box-shadow: 0 28px 80px rgba(1, 8, 18, .55), inset 0 1px 0 rgba(255,255,255,.06);
+      }
+      .auth-title { color: var(--gold-soft); }
+      .auth-logo-badge {
+        background: linear-gradient(135deg, #963e53, #64283b);
+        border: 1px solid rgba(234,214,166,.38);
+      }
+      @media (max-width: 768px) {
+        .app-topbar { background: rgba(13,29,47,.97); }
+        .kpi-card { background: linear-gradient(145deg, #203951, #172b40); }
+      }
     </style>
   </head>
   <body>
