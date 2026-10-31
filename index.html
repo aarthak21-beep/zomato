@@ -188,6 +188,20 @@
         border-radius: var(--radius-sm);
         display: inline-block;
       }
+      .pearl-o {
+        display: inline-block;
+        width: .82em;
+        height: .82em;
+        margin: 0 .015em;
+        vertical-align: -.035em;
+        border-radius: 50%;
+        color: transparent;
+        font-size: .96em;
+        background:
+          radial-gradient(circle at 30% 23%, rgba(255,255,255,.98) 0 7%, transparent 20%),
+          radial-gradient(circle at 35% 28%, #fffef5 0%, #f5edcf 42%, #d8c99e 76%, #fff9e8 100%);
+        box-shadow: inset -1px -2px 3px rgba(111,87,42,.22), 0 0 5px rgba(255,248,220,.55);
+      }
       .auth-title {
         font-size: 1.35rem;
         font-weight: 700;
@@ -274,6 +288,10 @@
         letter-spacing: -0.3px;
         padding: 0.25rem 0.55rem;
         border-radius: var(--radius-sm);
+      }
+      .brand-badge .pearl-o {
+        width: .82em;
+        height: .82em;
       }
       .brand-title {
         font-weight: 700;
@@ -1092,7 +1110,7 @@
     <div id="auth-screen">
       <div class="auth-card">
         <div class="auth-logo">
-          <span class="auth-logo-badge">MOTI</span>
+          <span class="auth-logo-badge">M<span class="pearl-o" aria-label="O">O</span>TI</span>
           <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">PARTNER EARNING TRACKER</span>
         </div>
         <h1 class="auth-title">Moti Partner Earning Tracker</h1>
@@ -1124,7 +1142,7 @@
       <header class="app-topbar">
         <!-- Zone 1: Brand -->
         <div class="brand-zone">
-          <span class="brand-badge">MOTI</span>
+          <span class="brand-badge">M<span class="pearl-o" aria-label="O">O</span>TI</span>
           <span class="brand-title">Partner Earning Tracker</span>
         </div>
 
