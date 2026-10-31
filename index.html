@@ -1443,20 +1443,25 @@
           <!-- Tab 6: Backup & Restore (JSON / CSV / Reset) -->
           <div class="form-section" id="tab-backup">
             <div class="report-card" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.04);">
-              <h4 style="color: var(--green-pos); display: flex; align-items: center; justify-content: space-between;">
-                <span>📱 Mobile &bull; 💻 Laptop Auto-Sync</span>
-                <span style="font-size: 0.75rem; color: var(--green-pos); font-weight: 600;">Active &bull; Cloud Connected</span>
-              </h4>
-              <p class="form-help" style="margin-bottom: 0.85rem; color: #cbd5e1;">
-                Your data is automatically synced between your mobile phone and laptop. Whenever you enter delivery earnings on your phone, they will immediately appear on your laptop dashboard when you open it at home!
+              <h4 style="color: var(--green-pos);">Google Sheets Cloud Sync</h4>
+              <p class="form-help" style="margin-bottom: 1rem; color: #cbd5e1;">
+                Connect your Google Apps Script web app. Your monthly earning data will be stored in your Google Sheet and can be loaded on another device using the same URL and Secret Key.
+              </p>
+              <div class="form-group">
+                <label for="cfg-google-sheet-url">Google Apps Script Web App URL</label>
+                <input type="url" id="cfg-google-sheet-url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="url" />
+              </div>
+              <div class="form-group">
+                <label for="cfg-google-sheet-key">Secret Key</label>
+                <input type="password" id="cfg-google-sheet-key" placeholder="Enter the same Secret Key used in Code.gs" autocomplete="new-password" />
+              </div>
+              <p class="form-help" style="margin-bottom: 1rem;">
+                The URL and key are saved only in this browser's LocalStorage, not in the public GitHub code. Enter them on each device. This is basic personal-use protection, not secure authentication.
               </p>
               <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-                <button id="force-sync-btn" class="btn btn-primary btn-sm">
-                  🔄 Force Sync with Server Now
-                </button>
-                <span id="last-sync-time-text" style="font-size: 0.75rem; color: var(--text-muted);">
-                  Status: All devices in sync
-                </span>
+                <button id="save-google-sync-btn" class="btn btn-primary btn-sm">Save &amp; Connect</button>
+                <button id="force-sync-btn" class="btn btn-secondary btn-sm">🔄 Sync Now</button>
+                <span id="last-sync-time-text" style="font-size: 0.75rem; color: var(--text-muted);">Status: Not connected</span>
               </div>
             </div>
 
@@ -1697,113 +1702,147 @@
         }
       }
 
-      // --- LOCALSTORAGE & SERVER MULTI-DEVICE SYNC ENGINE ---
+      // --- GOOGLE SHEETS MULTI-DEVICE SYNC ---
+      const GOOGLE_SYNC_CONFIG_KEY = "zomato_google_sync_config";
       let syncDebounceTimer = null;
       let isSyncing = false;
+
+      function getGoogleSyncConfig() {
+        try {
+          return JSON.parse(localStorage.getItem(GOOGLE_SYNC_CONFIG_KEY) || "{}");
+        } catch (err) {
+          return {};
+        }
+      }
 
       function triggerSavedIndicator(isSynced = true) {
         const indicator = document.getElementById("save-status-text");
         const dot = document.getElementById("sync-dot");
         if (indicator) {
-          indicator.textContent = isSynced ? "Synced (Mobile & Laptop)" : "Saved Locally";
+          indicator.textContent = isSynced ? "Cloud Synced" : "Saved Locally";
           indicator.style.color = isSynced ? "var(--green-pos)" : "var(--amber-warn)";
           if (dot) dot.style.background = isSynced ? "var(--green-pos)" : "var(--amber-warn)";
-          setTimeout(() => {
-            indicator.style.color = "var(--text-muted)";
-          }, 2000);
+          setTimeout(() => { indicator.style.color = "var(--text-muted)"; }, 2000);
         }
+      }
+
+      function googleSheetRequest(params) {
+        return new Promise((resolve, reject) => {
+          const config = getGoogleSyncConfig();
+          if (!config.url || !config.key) {
+            reject(new Error("Google Sheets sync is not configured"));
+            return;
+          }
+          const callbackName = "zomatoSheetCb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+          const script = document.createElement("script");
+          const requestUrl = new URL(config.url);
+          Object.entries(params).forEach(([key, value]) => {
+            requestUrl.searchParams.set(key, typeof value === "string" ? value : JSON.stringify(value));
+          });
+          requestUrl.searchParams.set("key", config.key);
+          requestUrl.searchParams.set("callback", callbackName);
+          let settled = false;
+          const cleanup = () => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            delete window[callbackName];
+            script.remove();
+          };
+          const timeoutId = setTimeout(() => {
+            cleanup();
+            reject(new Error("Google Sheets request timed out"));
+          }, 20000);
+          window[callbackName] = (data) => {
+            cleanup();
+            if (data && data.success) resolve(data);
+            else reject(new Error((data && data.error) || "Google Sheets request failed"));
+          };
+          script.onerror = () => {
+            cleanup();
+            reject(new Error("Could not reach Google Apps Script"));
+          };
+          script.src = requestUrl.toString();
+          script.async = true;
+          document.head.appendChild(script);
+        });
       }
 
       async function pushMonthDataToServer(year, month) {
-        try {
-          const res = await fetch(`/api/month/${year}/${month}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(AppState.monthData)
-          });
-          if (res.ok) {
-            triggerSavedIndicator(true);
-          }
-        } catch (err) {
+        const config = getGoogleSyncConfig();
+        if (!config.url || !config.key) {
           triggerSavedIndicator(false);
+          return;
         }
-      }
-
-      async function pushSettingsToServer() {
         try {
-          await fetch("/api/sync", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              auth: {
-                username: AppState.auth.username,
-                passwordHash: AppState.auth.passwordHash
-              },
-              settings: AppState.settings
-            })
+          await googleSheetRequest({
+            action: "save",
+            monthKey: `${year}_${month}`,
+            data: JSON.stringify(AppState.monthData)
           });
+          triggerSavedIndicator(true);
         } catch (err) {
-          console.log("Offline mode - settings saved to local storage");
+          console.error("Google Sheets save failed:", err);
+          triggerSavedIndicator(false);
         }
       }
 
       async function syncWithServer(showFeedback = false) {
         if (isSyncing) return;
+        const config = getGoogleSyncConfig();
+        if (!config.url || !config.key) {
+          const status = document.getElementById("last-sync-time-text");
+          if (status) status.textContent = "Status: Add your Script URL and Secret Key below";
+          if (showFeedback) showToast("First enter your Google Apps Script URL and Secret Key in Settings", "error");
+          return;
+        }
         isSyncing = true;
         const syncBtn = document.getElementById("sync-now-btn");
         const forceBtn = document.getElementById("force-sync-btn");
         if (syncBtn) syncBtn.textContent = "⏳...";
         if (forceBtn) forceBtn.textContent = "⏳ Syncing...";
-
         try {
-          const res = await fetch("/api/sync");
-          if (!res.ok) throw new Error("Sync failed");
-          const json = await res.json();
-          if (json.success && json.data) {
-            const serverStore = json.data;
+          const result = await googleSheetRequest({ action: "list" });
+          const remoteMonths = result.months || {};
 
-            // Merge Settings & Auth
-            if (serverStore.settings) {
-              AppState.settings = { ...AppState.settings, ...serverStore.settings };
-              localStorage.setItem("zomato_settings", JSON.stringify(AppState.settings));
+          Object.keys(remoteMonths).forEach((monthKey) => {
+            const parts = monthKey.split("_");
+            if (parts.length === 2) {
+              localStorage.setItem(`zomato_data_${parts[0]}_${parts[1]}`, JSON.stringify(remoteMonths[monthKey]));
             }
-            if (serverStore.auth) {
-              AppState.auth.username = serverStore.auth.username || AppState.auth.username;
-              AppState.auth.passwordHash = serverStore.auth.passwordHash || AppState.auth.passwordHash;
-              localStorage.setItem("zomato_auth", JSON.stringify(AppState.auth));
-            }
+          });
 
-            // Merge all Months
-            if (serverStore.months) {
-              Object.keys(serverStore.months).forEach((mKey) => {
-                const parts = mKey.split("_");
-                if (parts.length === 2) {
-                  const y = parts[0];
-                  const m = parts[1];
-                  localStorage.setItem(`zomato_data_${y}_${m}`, JSON.stringify(serverStore.months[mKey]));
-                }
-              });
-            }
-
-            // Reload active month and re-render
-            loadMonthData(AppState.currentYear, AppState.currentMonth);
-            renderAll();
-
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const lastSyncText = document.getElementById("last-sync-time-text");
-            if (lastSyncText) lastSyncText.textContent = `Status: Last synced at ${timeStr} ✓`;
-
-            triggerSavedIndicator(true);
-            if (showFeedback) showToast("All devices synced with latest entries!");
+          const localMonthKeys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("zomato_data_")) localMonthKeys.push(key);
           }
+          for (const storageKey of localMonthKeys) {
+            const monthKey = storageKey.slice("zomato_data_".length);
+            if (!Object.prototype.hasOwnProperty.call(remoteMonths, monthKey)) {
+              const localData = JSON.parse(localStorage.getItem(storageKey) || "{}");
+              await googleSheetRequest({ action: "save", monthKey, data: JSON.stringify(localData) });
+            }
+          }
+
+          loadMonthData(AppState.currentYear, AppState.currentMonth);
+          renderAll();
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          const lastSyncText = document.getElementById("last-sync-time-text");
+          if (lastSyncText) lastSyncText.textContent = `Status: Connected · Last synced at ${timeStr} ✓`;
+          triggerSavedIndicator(true);
+          if (showFeedback) showToast("Google Sheet sync completed!");
         } catch (err) {
+          console.error("Google Sheets sync failed:", err);
           triggerSavedIndicator(false);
-          if (showFeedback) showToast("Offline mode - Working locally", "error");
+          const status = document.getElementById("last-sync-time-text");
+          if (status) status.textContent = "Status: Sync failed — check URL, key and deployment";
+          if (showFeedback) showToast("Google Sheet sync failed. Check URL and Secret Key.", "error");
         } finally {
           isSyncing = false;
           if (syncBtn) syncBtn.textContent = "🔄 Sync";
-          if (forceBtn) forceBtn.textContent = "🔄 Force Sync with Server Now";
+          if (forceBtn) forceBtn.textContent = "🔄 Sync Now";
         }
       }
 
@@ -1816,7 +1855,6 @@
           }));
           localStorage.setItem("zomato_settings", JSON.stringify(AppState.settings));
           triggerSavedIndicator(true);
-          pushSettingsToServer();
         } catch (e) {
           console.error("Error saving settings", e);
         }
@@ -2196,6 +2234,19 @@
           showToast("Account credentials updated successfully!");
         });
 
+        // Google Sheets connection settings
+        document.getElementById("save-google-sync-btn").addEventListener("click", () => {
+          const url = document.getElementById("cfg-google-sheet-url").value.trim();
+          const key = document.getElementById("cfg-google-sheet-key").value.trim();
+          if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test(url) || !key) {
+            showToast("Enter a valid Apps Script Web App URL and Secret Key", "error");
+            return;
+          }
+          localStorage.setItem(GOOGLE_SYNC_CONFIG_KEY, JSON.stringify({ url, key }));
+          showToast("Google Sheets connection details saved");
+          syncWithServer(true);
+        });
+
         // Backup and Restore
         document.getElementById("backup-download-btn").addEventListener("click", downloadJSONBackup);
         document.getElementById("restore-file-input").addEventListener("change", handleJSONRestore);
@@ -2313,6 +2364,9 @@
         document.getElementById("cfg-rounding-mode").value = AppState.settings.rounding || "round";
         document.getElementById("cfg-formula-total").value = AppState.settings.formulaTotal || "zomato_only";
         document.getElementById("cfg-username").value = AppState.auth.username;
+        const cloudConfig = getGoogleSyncConfig();
+        document.getElementById("cfg-google-sheet-url").value = cloudConfig.url || "";
+        document.getElementById("cfg-google-sheet-key").value = cloudConfig.key || "";
 
         populateColumnCheckboxes();
       }
