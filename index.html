@@ -1010,6 +1010,100 @@
         color: #fff;
       }
 
+      /* MOTI PREMIUM SETTINGS & APP-WIDE FINISH */
+      .settings-tabs {
+        gap: .45rem;
+        padding: .35rem;
+        border: 1px solid rgba(214,181,109,.2);
+        border-radius: 14px;
+        background: linear-gradient(120deg,rgba(18,39,60,.92),rgba(25,31,51,.88));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+      }
+      .settings-tab-btn {
+        border: 1px solid transparent;
+        border-radius: 9px;
+        padding: .68rem .95rem;
+        transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+      }
+      .settings-tab-btn:hover {
+        color: #f4dfae;
+        background: rgba(135,54,74,.16);
+      }
+      .settings-tab-btn.active {
+        color: #f3d99c;
+        border: 1px solid rgba(214,181,109,.34);
+        background: linear-gradient(135deg,rgba(135,54,74,.34),rgba(214,181,109,.10));
+        box-shadow: 0 5px 16px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      .form-section {
+        padding: clamp(1rem,2.2vw,1.5rem);
+        border: 1px solid rgba(214,181,109,.19);
+        border-radius: 15px;
+        background: linear-gradient(145deg,rgba(21,43,64,.88),rgba(13,29,46,.94));
+        box-shadow: 0 12px 28px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.035);
+      }
+      .form-group label { color: #d6c69f; }
+      .form-group input, .form-group select,
+      input, select, textarea {
+        accent-color: #d6b56d;
+      }
+      .form-group input, .form-group select {
+        background: rgba(5,16,29,.62);
+        border-color: rgba(178,199,221,.19);
+        transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      }
+      .form-group input:focus, .form-group select:focus {
+        background: rgba(7,20,35,.9);
+        border-color: rgba(214,181,109,.72);
+        box-shadow: 0 0 0 3px rgba(214,181,109,.11);
+      }
+      .form-help { color: #9eafc2; }
+      .btn { transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+      .btn:active { transform: translateY(1px) scale(.985); }
+      .btn-secondary {
+        background: linear-gradient(135deg,#203750,#17283d);
+        border-color: rgba(180,202,226,.2);
+        color: #dce7f2;
+      }
+      .btn-secondary:hover {
+        background: linear-gradient(135deg,#294661,#1b3048);
+        border-color: rgba(214,181,109,.42);
+        box-shadow: 0 6px 16px rgba(0,0,0,.16);
+      }
+      .btn-danger { border-color: rgba(190,78,99,.42); }
+      .report-history-card, .chart-card, .report-card, .toolbar-strip {
+        border-color: rgba(214,181,109,.18);
+        background-image: linear-gradient(145deg,rgba(25,47,69,.72),rgba(12,27,44,.56));
+      }
+      .report-history-table th {
+        color: #e4d2a7;
+        background: rgba(26,48,70,.78);
+      }
+      .report-history-table tbody tr { transition: background .16s ease; }
+      .report-history-table tbody tr:hover { background: rgba(214,181,109,.065); }
+      .modal-backdrop { background: rgba(2,9,18,.78); }
+      .modal-content {
+        background: linear-gradient(145deg,#1a3048,#0e2034);
+        border: 1px solid rgba(214,181,109,.28);
+        box-shadow: 0 28px 80px rgba(0,0,0,.48);
+      }
+      .modal-header, .modal-footer { border-color: rgba(214,181,109,.2); }
+      .modal-title { color: #f0d99f; }
+      .col-toggle-grid > *, .shift-card, .backup-card {
+        border-color: rgba(214,181,109,.16);
+      }
+      input[type="checkbox"], input[type="radio"] { accent-color: #d6b56d; }
+      :focus-visible {
+        outline: 2px solid rgba(214,181,109,.82);
+        outline-offset: 2px;
+      }
+      @media(max-width:768px) {
+        .settings-tabs { border-radius: 12px; padding: .25rem; }
+        .settings-tab-btn { padding: .62rem .78rem; }
+        .form-section { border-radius: 12px; padding: 1rem; }
+        .modal-content { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+      }
+
       /* --- MODALS --- */
       .modal-backdrop {
         position: fixed;
