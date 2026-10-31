@@ -2074,6 +2074,121 @@
         table.earning-table tfoot td { color: #111 !important; background: #fff !important; }
       }
 
+    
+      /* MOTI PREMIUM MICRO-INTERACTIONS — FOOTER, CHARTS & TABLE UX */
+      .moti-app-footer {
+        position: relative;
+        margin-top: 1.5rem;
+        padding: 1.25rem 1.5rem 1.5rem;
+        border-top: 1px solid rgba(214,181,109,.2);
+        background: linear-gradient(90deg,rgba(13,31,49,.2),rgba(32,37,53,.42),rgba(13,31,49,.2));
+        color: #9fb2c6;
+        letter-spacing: .12px;
+      }
+      .moti-app-footer::before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: 35%;
+        right: 35%;
+        height: 1px;
+        background: linear-gradient(90deg,transparent,#d6b56d,transparent);
+      }
+      .moti-app-footer a {
+        color: #e8d19c;
+        padding: .28rem .55rem;
+        border: 1px solid rgba(214,181,109,.2);
+        border-radius: 999px;
+        background: rgba(214,181,109,.055);
+        transition: background .18s ease,border-color .18s ease,transform .18s ease;
+      }
+      .moti-app-footer a:hover {
+        color: #fff0c9;
+        text-decoration: none;
+        background: rgba(135,54,74,.2);
+        border-color: rgba(214,181,109,.42);
+        transform: translateY(-1px);
+      }
+      .chart-header {
+        gap: .8rem;
+        flex-wrap: wrap;
+        padding-bottom: .75rem;
+        border-bottom: 1px solid rgba(214,181,109,.12);
+      }
+      .chart-legend { flex-wrap: wrap; row-gap: .45rem; }
+      .legend-color { box-shadow: 0 0 8px rgba(214,181,109,.12); }
+      .canvas-wrapper { overflow: hidden; border-radius: 10px; }
+      canvas { max-width: 100%; }
+      .earning-calendar-head {
+        gap: .8rem;
+        padding-bottom: .9rem;
+        border-bottom: 1px solid rgba(214,181,109,.13);
+      }
+      .earning-calendar-head .table-meta-text { margin-top: .22rem; line-height: 1.5; }
+      #calendar-month-total {
+        color: #f4dfae;
+        background: linear-gradient(135deg,rgba(135,54,74,.28),rgba(214,181,109,.12));
+        border: 1px solid rgba(214,181,109,.3);
+        box-shadow: 0 5px 14px rgba(0,0,0,.14);
+      }
+      .earning-calendar-weekday {
+        color: #d5c59e;
+        letter-spacing: .55px;
+        text-transform: uppercase;
+      }
+      .report-history-card {
+        overflow: hidden;
+        border: 1px solid rgba(214,181,109,.2);
+        border-radius: 15px;
+        box-shadow: 0 12px 28px rgba(0,0,0,.15);
+      }
+      .report-history-card > .chart-header { padding: 1rem 1.1rem .85rem; margin: 0; }
+      .report-history-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #87536a #0b1725;
+      }
+      .report-history-table { min-width: 620px; }
+      .report-history-table th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        font-size: .7rem;
+        letter-spacing: .45px;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(214,181,109,.25);
+      }
+      .report-history-table td { padding: .82rem .85rem; }
+      .report-history-table tbody tr:last-child td { border-bottom: 0; }
+      .report-history-table .btn { box-shadow: 0 3px 10px rgba(0,0,0,.12); }
+      .earning-calendar-card, .table-card, .chart-card, .report-history-card {
+        scroll-margin-top: 90px;
+      }
+      .settings-tabs {
+        scrollbar-width: thin;
+        scrollbar-color: #87536a #0b1725;
+        overscroll-behavior-x: contain;
+      }
+      .settings-tab-btn { flex: 0 0 auto; }
+      .settings-tab-btn:focus-visible, .nav-link:focus-visible {
+        outline: 2px solid #d6b56d;
+        outline-offset: 2px;
+      }
+      .earning-calendar-day:focus-within {
+        border-color: rgba(214,181,109,.65);
+        box-shadow: 0 0 0 2px rgba(214,181,109,.12);
+      }
+      @media(max-width:600px) {
+        .moti-app-footer { gap: .55rem; padding: 1rem .75rem 1.25rem; font-size: .69rem; }
+        .moti-app-footer a { padding: .25rem .5rem; }
+        .chart-header { align-items: flex-start; }
+        .chart-legend { font-size: .68rem; gap: .65rem; }
+        .earning-calendar-head { align-items: center; }
+        .report-history-card > .chart-header { padding: .85rem; }
+      }
+
     </style>
   </head>
   <body>
