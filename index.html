@@ -2315,6 +2315,125 @@
       }
       @media(prefers-reduced-motion:reduce) { #toast-container .toast { animation:none !important; } }
 
+
+      /* MOTI FINAL FIVE-STAGE FINISH — EMPTY STATES, MOBILE TABLE, CHARTS, REPORTS & QA */
+      /* 1. Dashboard and report empty states */
+      #report-history-body td[colspan],
+      #table-body td[colspan] {
+        padding:1.65rem 1rem !important;
+        text-align:center;
+        color:#b8c8d8;
+        background:linear-gradient(135deg,rgba(20,42,62,.62),rgba(8,23,38,.72));
+        border:1px dashed rgba(214,181,109,.24);
+        border-radius:10px;
+        letter-spacing:.12px;
+      }
+      #earning-calendar-grid:empty {
+        min-height:108px;
+        place-items:center;
+        align-content:center;
+        border:1px dashed rgba(214,181,109,.2);
+        border-radius:12px;
+        background:rgba(5,18,31,.24);
+      }
+      #earning-calendar-grid:empty::after {
+        content:"Your daily earnings will appear here";
+        color:#9fb2c5;
+        font-size:.82rem;
+        text-align:center;
+      }
+      /* 2. Mobile-first earning table usability */
+      .table-responsive {
+        max-width:100%;
+        overflow-x:auto;
+        overscroll-behavior-x:contain;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:thin;
+        scrollbar-color:rgba(214,181,109,.42) rgba(5,17,30,.35);
+      }
+      .earning-table { min-width:940px; }
+      .earning-table th { white-space:nowrap; }
+      .earning-table td { min-width:76px; }
+      .earning-table input,.earning-table select { max-width:100%; }
+      .earning-table input:focus,.earning-table select:focus {
+        position:relative;
+        z-index:2;
+        box-shadow:0 0 0 2px rgba(214,181,109,.16),0 0 0 1px rgba(214,181,109,.55);
+      }
+      /* 3. Chart presentation and canvas stability */
+      .charts-row { align-items:stretch; gap:1rem; }
+      .chart-card {
+        min-width:0;
+        overflow:hidden;
+        position:relative;
+        isolation:isolate;
+      }
+      .chart-card::after {
+        content:"";
+        position:absolute;
+        inset:auto 12% 0;
+        height:1px;
+        background:linear-gradient(90deg,transparent,rgba(214,181,109,.34),transparent);
+        pointer-events:none;
+      }
+      .chart-header { flex-wrap:wrap; align-items:center; row-gap:.65rem; }
+      .chart-title { letter-spacing:.12px; }
+      .canvas-wrapper { min-width:0; overflow:hidden; }
+      .canvas-wrapper canvas { display:block; max-width:100%; }
+      .chart-legend { row-gap:.45rem; }
+      .legend-item { white-space:nowrap; }
+      /* 4. Reports and history readability */
+      #view-reports { min-width:0; }
+      #view-reports .report-card {
+        min-width:0;
+        position:relative;
+        overflow:hidden;
+        box-shadow:0 12px 28px rgba(0,0,0,.13),inset 0 1px rgba(255,255,255,.025);
+      }
+      #view-reports .report-card h4 { color:#ead7ac; }
+      #view-reports .report-card strong { font-variant-numeric:tabular-nums; }
+      .report-history-wrap {
+        max-width:100%;
+        overflow-x:auto;
+        overscroll-behavior-x:contain;
+        -webkit-overflow-scrolling:touch;
+      }
+      .report-history-table { min-width:650px; }
+      .report-history-table th { white-space:nowrap; }
+      .report-history-table td { font-variant-numeric:tabular-nums; }
+      /* 5. Final responsive and accessibility QA */
+      button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
+      button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+        outline:2px solid rgba(214,181,109,.82);
+        outline-offset:2px;
+      }
+      @media(max-width:768px) {
+        .charts-row { grid-template-columns:minmax(0,1fr); }
+        .chart-card { padding:.9rem; }
+        .chart-header { align-items:flex-start; }
+        .chart-legend { flex-wrap:wrap; }
+        .earning-calendar-day { min-height:64px; padding:.35rem; }
+        .earning-calendar-day .day-amount { font-size:.68rem; }
+        .table-card { min-width:0; }
+        .table-top-actions { flex-wrap:wrap; gap:.65rem; }
+        #view-reports > .toolbar-strip { flex-wrap:wrap; gap:.75rem; }
+        #view-reports .report-card { padding:1rem; }
+      }
+      @media(max-width:480px) {
+        .earning-calendar-grid { gap:.22rem; }
+        .earning-calendar-day { min-height:55px; border-radius:7px; }
+        .earning-calendar-day .day-num { font-size:.65rem; }
+        .earning-calendar-day .day-amount { margin-top:.2rem; font-size:.61rem; }
+        .calendar-legend { flex-wrap:wrap; gap:.45rem .7rem; }
+        .report-history-card { padding:.85rem; }
+        .report-history-table th,.report-history-table td { padding:.58rem .42rem; }
+        #view-reports .toolbar-strip { align-items:flex-start; }
+        .earning-table { min-width:900px; }
+      }
+      @media(prefers-reduced-motion:reduce) {
+        .chart-card,.report-card,.earning-table tr,.earning-calendar-day { transition:none !important; }
+      }
+
 </style>
   </head>
   <body>
