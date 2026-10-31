@@ -2955,6 +2955,26 @@
 
           <!-- Tab 6: Backup & Restore (JSON / CSV / Reset) -->
           <div class="form-section" id="tab-backup">
+            <div class="report-card" id="screenshot-import-card" style="border-color: rgba(214,181,109,.42); background: linear-gradient(145deg, rgba(19,35,52,.92), rgba(35,24,37,.72));">
+              <h4 style="color:#e8cb83;">📸 Zomato Screenshot Import</h4>
+              <p class="form-help" style="margin-bottom:1rem;">Zomato Partner App मधील <strong>Day</strong> Earnings screenshot निवडा. Screenshot मधून तारीख आणि एकूण कमाई वाचून preview दाखवला जाईल. Confirm केल्यावर त्या दिवसाच्या ZOMATO column मध्ये रक्कम भरेल.</p>
+              <div class="form-group">
+                <label for="zomato-earning-screenshot">Select Day Earnings Screenshot</label>
+                <input type="file" id="zomato-earning-screenshot" accept="image/*" style="width:100%;padding:.7rem;border:1px solid var(--border-subtle);border-radius:10px;background:var(--bg-input);" />
+              </div>
+              <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. फक्त Day tab चा screenshot वापरा; Week/Month summary पुढील update मध्ये.</div>
+              <div id="screenshot-import-preview" style="display:none;margin-top:1rem;padding:1rem;border:1px solid rgba(214,181,109,.28);border-radius:12px;background:rgba(5,12,20,.38);">
+                <div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div>
+                <div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div>
+                <p id="screenshot-import-duplicate" class="form-help" style="margin:.5rem 0 1rem;"></p>
+                <div style="display:flex;gap:.65rem;flex-wrap:wrap;">
+                  <button type="button" id="screenshot-import-confirm" class="btn btn-primary btn-sm">✓ Confirm Import</button>
+                  <button type="button" id="screenshot-import-cancel" class="btn btn-secondary btn-sm">Cancel</button>
+                </div>
+              </div>
+              <p class="form-help" style="margin-top:1rem;">Duplicate protection: same date + same amount पुन्हा आल्यास Skip. त्या तारखेला वेगळी रक्कम आधीपासून असल्यास overwrite करण्याआधी confirmation घेतले जाईल. OCR browser मध्येच चालते; screenshot server वर upload होत नाही. OCR साठी internet लागेल.</p>
+            </div>
+
             <div class="report-card" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.04);">
               <h4 style="color: var(--green-pos);">Google Sheets Cloud Sync</h4>
               <p class="form-help" style="margin-bottom: 1rem; color: #cbd5e1;">
@@ -3835,6 +3855,13 @@
           showToast("Google Sheets connection details saved");
           syncWithServer(true);
         });
+
+        // Zomato Partner daily screenshot OCR import
+        document.getElementById("zomato-earning-screenshot").addEventListener("change", handleZomatoScreenshot);
+        document.getElementById("screenshot-import-confirm").addEventListener("click", confirmZomatoScreenshotImport);
+        document.getElementById("screenshot-import-cancel").addEventListener("click", resetZomatoScreenshotImport);
+        document.getElementById("screenshot-import-date").addEventListener("change", updateZomatoScreenshotDuplicateHint);
+        document.getElementById("screenshot-import-amount").addEventListener("input", updateZomatoScreenshotDuplicateHint);
 
         // Backup and Restore
         document.getElementById("backup-download-btn").addEventListener("click", downloadJSONBackup);
@@ -4829,6 +4856,151 @@
         downloadAnchor.remove();
 
         showToast("Full JSON Backup downloaded!");
+      }
+
+      // --- ZOMATO PARTNER SCREENSHOT IMPORT (DAILY VIEW) ---
+      let pendingZomatoScreenshotImport = null;
+      let tesseractLoaderPromise = null;
+
+      function loadTesseractLibrary() {
+        if (window.Tesseract) return Promise.resolve(window.Tesseract);
+        if (!tesseractLoaderPromise) {
+          tesseractLoaderPromise = new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+            script.async = true;
+            script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR library did not initialize"));
+            script.onerror = () => reject(new Error("Could not load OCR library. Check internet and try again."));
+            document.head.appendChild(script);
+          });
+        }
+        return tesseractLoaderPromise;
+      }
+
+      function parseZomatoDailyScreenshotText(text) {
+        const normalized = String(text || "").replace(/\\s+/g, " ").replace(/,/g, "");
+        const dateMatch = normalized.match(/\\b(\\d{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\b/i);
+        const amountMatches = [...normalized.matchAll(/₹\\s*([0-9]{1,7}(?:\\.[0-9]{1,2})?)/g)];
+        const amount = amountMatches.length ? Number(amountMatches[0][1]) : NaN;
+        let date = "";
+        if (dateMatch) {
+          const monthIndex = MONTH_NAMES.findIndex((m) => m.toLowerCase() === dateMatch[2].toLowerCase());
+          const year = new Date().getFullYear();
+          date = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(Number(dateMatch[1])).padStart(2, "0")}`;
+        }
+        return { date, amount, dateFound: !!dateMatch, amountFound: Number.isFinite(amount) };
+      }
+
+      async function handleZomatoScreenshot(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const status = document.getElementById("screenshot-ocr-status");
+        const preview = document.getElementById("screenshot-import-preview");
+        const confirmBtn = document.getElementById("screenshot-import-confirm");
+        preview.style.display = "none";
+        pendingZomatoScreenshotImport = null;
+        status.textContent = "Reading screenshot… पहिल्यांदा OCR library load होण्यासाठी थोडा वेळ लागू शकतो.";
+        confirmBtn.disabled = true;
+        try {
+          const Tesseract = await loadTesseractLibrary();
+          const worker = await Tesseract.createWorker("eng");
+          try {
+            const result = await worker.recognize(file);
+            const parsed = parseZomatoDailyScreenshotText(result.data.text);
+            if (!parsed.dateFound && !parsed.amountFound) {
+              throw new Error("Date आणि ₹ total वाचता आले नाहीत. स्पष्ट Day screenshot पुन्हा निवडा.");
+            }
+            const dateInput = document.getElementById("screenshot-import-date");
+            const amountInput = document.getElementById("screenshot-import-amount");
+            dateInput.value = parsed.date || "";
+            amountInput.value = parsed.amountFound ? parsed.amount.toFixed(2) : "";
+            pendingZomatoScreenshotImport = { fileName: file.name, ocrText: result.data.text };
+            preview.style.display = "block";
+            status.textContent = "OCR complete. Import करण्यापूर्वी तारीख आणि रक्कम तपासा.";
+            updateZomatoScreenshotDuplicateHint();
+            confirmBtn.disabled = false;
+          } finally {
+            await worker.terminate();
+          }
+        } catch (err) {
+          console.error("Zomato screenshot OCR failed:", err);
+          status.textContent = err.message || "Screenshot वाचता आला नाही.";
+          confirmBtn.disabled = false;
+        }
+      }
+
+      function updateZomatoScreenshotDuplicateHint() {
+        const dateValue = document.getElementById("screenshot-import-date").value;
+        const amount = Number(document.getElementById("screenshot-import-amount").value);
+        const hint = document.getElementById("screenshot-import-duplicate");
+        if (!dateValue || !Number.isFinite(amount)) { hint.textContent = "तारीख आणि रक्कम तपासा."; return; }
+        const [year, month, day] = dateValue.split("-").map(Number);
+        const monthData = JSON.parse(localStorage.getItem(getMonthStorageKey(year, month - 1)) || '{"days":{}}');
+        const existing = Number(monthData?.days?.[day]?.zomato || 0);
+        if (existing === amount && existing > 0) {
+          hint.textContent = "✓ हीच रक्कम या तारखेला आधीच आहे. Confirm केल्यास duplicate न बनवता Skip होईल.";
+        } else if (existing > 0) {
+          hint.textContent = `⚠ या तारखेला आधी ₹${existing.toFixed(2)} नोंद आहे. Confirm केल्यावर overwrite करण्याआधी विचारले जाईल.`;
+        } else {
+          hint.textContent = "या तारखेला ZOMATO earning entry नाही. Confirm केल्यावर नवीन entry बनेल.";
+        }
+      }
+
+      function resetZomatoScreenshotImport() {
+        document.getElementById("zomato-earning-screenshot").value = "";
+        document.getElementById("screenshot-import-preview").style.display = "none";
+        document.getElementById("screenshot-ocr-status").textContent = "Ready. फक्त Day tab चा screenshot वापरा; Week/Month summary पुढील update मध्ये.";
+        pendingZomatoScreenshotImport = null;
+      }
+
+      function confirmZomatoScreenshotImport() {
+        if (!pendingZomatoScreenshotImport) return;
+        const dateValue = document.getElementById("screenshot-import-date").value;
+        const amount = Number(document.getElementById("screenshot-import-amount").value);
+        if (!dateValue || !Number.isFinite(amount) || amount < 0) {
+          showToast("Valid date आणि earning amount भरा.", "error");
+          return;
+        }
+        const [year, month, day] = dateValue.split("-").map(Number);
+        if (year < 2024 || year > 2030 || month < 1 || month > 12 || day < 1 || day > getDaysInMonth(year, month - 1)) {
+          showToast("Date 2024–2030 मधील valid date असावी.", "error");
+          return;
+        }
+        const storageKey = getMonthStorageKey(year, month - 1);
+        let targetMonth;
+        try { targetMonth = JSON.parse(localStorage.getItem(storageKey) || '{"days":{}}'); }
+        catch (e) { targetMonth = { days: {} }; }
+        targetMonth.days = targetMonth.days || {};
+        const existing = Number(targetMonth.days[day]?.zomato || 0);
+        if (existing === amount && existing > 0) {
+          showToast("Duplicate detected — same date आणि amount आधीच आहे. Skip केले.");
+          resetZomatoScreenshotImport();
+          return;
+        }
+        const applyImport = () => {
+          if (year === AppState.currentYear && month - 1 === AppState.currentMonth) {
+            if (!AppState.monthData.days[day]) AppState.monthData.days[day] = { shift1: "Off", shift2: "Off", shift3: "Off", zomato: 0 };
+            AppState.monthData.days[day].zomato = amount;
+            saveMonthData(year, month - 1);
+            renderAll();
+          } else {
+            if (!targetMonth.monthlyTarget) targetMonth.monthlyTarget = AppState.settings.defaultMonthlyTarget;
+            targetMonth.days[day] = { ...(targetMonth.days[day] || { shift1: "Off", shift2: "Off", shift3: "Off" }), zomato: amount };
+            localStorage.setItem(storageKey, JSON.stringify(targetMonth));
+            pushMonthDataToServer(year, month - 1);
+          }
+          showToast(`Imported ₹${amount.toFixed(2)} for ${String(day).padStart(2, "0")}-${MONTH_SHORT[month - 1]}-${year}`);
+          resetZomatoScreenshotImport();
+        };
+        if (existing > 0) {
+          showConfirmModal(
+            "Replace Existing Earning?",
+            `This date already has ₹${existing.toFixed(2)}. Replace it with ₹${amount.toFixed(2)}?`,
+            applyImport
+          );
+        } else {
+          applyImport();
+        }
       }
 
       function handleJSONRestore(event) {
