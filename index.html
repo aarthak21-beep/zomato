@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zomato Earning Tracker</title>
-    <meta name="description" content="Professional dark dashboard to track daily Zomato delivery earnings, monthly targets, shift timings, cumulative pacing, and financial performance reports." />
-    <meta property="og:title" content="Zomato Earning Tracker" />
-    <meta property="og:description" content="Professional dark dashboard to track daily Zomato delivery earnings, monthly targets, shift timings, cumulative pacing, and financial performance reports." />
+    <title>Moti Partner Earning Tracker | Moti Technologies</title>
+    <meta name="description" content="Moti Partner Earning Tracker by Moti Technologies — a smart dashboard to track delivery earnings, monthly targets, shifts and performance." />
+    <meta property="og:title" content="Moti Partner Earning Tracker | Moti Technologies" />
+    <meta property="og:description" content="Smart Earnings. Better Tracking. Built by Moti Technologies." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -931,6 +931,25 @@
         }
       }
 
+      .moti-app-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem 1.1rem;
+        padding: 1rem 1.5rem 1.35rem;
+        border-top: 1px solid var(--border-subtle);
+        color: var(--text-muted);
+        font-size: .75rem;
+        text-align: center;
+      }
+      .moti-app-footer a {
+        color: #f1f5f9;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .moti-app-footer a:hover { color: var(--zomato-red-hover); text-decoration: underline; }
+
       .auth-powered-by {
         margin-top: 1.6rem;
         padding-top: 1rem;
@@ -1073,11 +1092,11 @@
     <div id="auth-screen">
       <div class="auth-card">
         <div class="auth-logo">
-          <span class="auth-logo-badge">zomato</span>
-          <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">PARTNER TRACKER</span>
+          <span class="auth-logo-badge">MOTI</span>
+          <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">PARTNER EARNING TRACKER</span>
         </div>
-        <h1 class="auth-title">Rider Dashboard Login</h1>
-        <p class="auth-desc">Secure local personal portal for tracking delivery earnings, shift timings, and monthly targets.</p>
+        <h1 class="auth-title">Moti Partner Earning Tracker</h1>
+        <p class="auth-desc">Smart Earnings. Better Tracking. Your personal delivery earnings dashboard.</p>
 
         <form id="login-form">
           <div class="auth-input-group">
@@ -1105,8 +1124,8 @@
       <header class="app-topbar">
         <!-- Zone 1: Brand -->
         <div class="brand-zone">
-          <span class="brand-badge">zomato</span>
-          <span class="brand-title">Earning Tracker</span>
+          <span class="brand-badge">MOTI</span>
+          <span class="brand-title">Partner Earning Tracker</span>
         </div>
 
         <!-- Zone 2: Navigation Links -->
@@ -1632,6 +1651,11 @@
           </div>
         </section>
       </main>
+      <footer class="moti-app-footer">
+        <span>© <span id="moti-footer-year">2026</span> Moti Technologies</span>
+        <span>Smart Earnings. Better Tracking.</span>
+        <a href="https://moti-technologies.onrender.com/" target="_blank" rel="noopener noreferrer">Visit Moti Technologies ↗</a>
+      </footer>
     </div>
 
     <!-- ==================== MODALS ==================== -->
