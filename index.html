@@ -2189,7 +2189,88 @@
         .report-history-card > .chart-header { padding: .85rem; }
       }
 
-    </style>
+    
+      /* MOTI PREMIUM INPUT & MOBILE TABLE FINISH */
+      /* Clear, tactile controls throughout the tracker */
+      .earning-table input, .earning-table select {
+        min-height: 36px;
+        border: 1px solid rgba(171,196,222,.17);
+        border-radius: 8px;
+        background: rgba(5,17,30,.68);
+        color: #e7edf5;
+        transition: border-color .16s ease,background .16s ease,box-shadow .16s ease;
+      }
+      .earning-table input:hover, .earning-table select:hover {
+        border-color: rgba(214,181,109,.38);
+        background: rgba(8,23,39,.92);
+      }
+      .earning-table input:focus, .earning-table select:focus {
+        outline: none;
+        border-color: #d6b56d;
+        box-shadow: 0 0 0 3px rgba(214,181,109,.12);
+        background: #0a1c2e;
+      }
+      .earning-table input[type="number"] { font-variant-numeric: tabular-nums; }
+      .earning-table tbody tr { transition: background .15s ease; }
+      .earning-table tbody tr:hover td { background-color: rgba(214,181,109,.045); }
+      .earning-table tbody td { transition: background-color .15s ease; }
+      .btn, .settings-tab-btn, .nav-link {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      .btn:focus-visible, .settings-tab-btn:focus-visible,
+      .earning-table button:focus-visible, .report-history-table button:focus-visible {
+        outline: 2px solid #e2c477;
+        outline-offset: 3px;
+        box-shadow: 0 0 0 5px rgba(214,181,109,.10);
+      }
+      .form-section input, .form-section select, .form-section textarea {
+        min-height: 40px;
+        border-radius: 9px;
+        background-color: rgba(5,17,30,.58);
+      }
+      .form-section textarea { min-height: 88px; }
+      .form-help { color: #9fb2c6; }
+      .table-responsive {
+        scrollbar-width: thin;
+        scrollbar-color: #87536a #0b1725;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      .table-responsive::-webkit-scrollbar, .report-history-wrap::-webkit-scrollbar {
+        height: 7px;
+      }
+      .table-responsive::-webkit-scrollbar-track, .report-history-wrap::-webkit-scrollbar-track {
+        background: #0b1725;
+        border-radius: 99px;
+      }
+      .table-responsive::-webkit-scrollbar-thumb, .report-history-wrap::-webkit-scrollbar-thumb {
+        background: linear-gradient(90deg,#87364a,#d6b56d);
+        border-radius: 99px;
+      }
+      .modal-box .btn { min-height: 39px; }
+      @media (hover:hover) {
+        .earning-table tbody tr:hover { box-shadow: inset 3px 0 0 rgba(214,181,109,.45); }
+        .btn:not(:disabled):active { transform: translateY(1px) scale(.985); }
+        .settings-tab-btn:hover { border-color: rgba(214,181,109,.34); }
+      }
+      @media (max-width: 600px) {
+        .earning-table input, .earning-table select {
+          min-height: 38px;
+          border-radius: 7px;
+          font-size: .78rem;
+        }
+        .table-responsive { border-radius: 10px; }
+        .form-section { padding: .9rem; }
+        .form-section input, .form-section select { min-height: 42px; }
+        .btn { min-height: 38px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .earning-table input, .earning-table select, .earning-table tbody tr,
+        .earning-table tbody td { transition: none !important; }
+      }
+
+</style>
   </head>
   <body>
     <!-- ==================== AUTH / LOGIN SCREEN ==================== -->
