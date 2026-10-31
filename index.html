@@ -4907,42 +4907,70 @@
 
       async function readWeeklyGraphAmounts(file, worker, count, ocrText) {
         const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=[];
-        // Coordinates calibrated against the Zomato Partner weekly earnings screenshot:
-        // each label is tilted above its corresponding bar.
+        // Dedicated weekly-label OCR: multi-pass crops, deskew angles and contrast thresholds.
         const slots=[
-          [.145,.565],[.278,.520],[.400,.537],[.515,.591],
-          [.630,.592],[.744,.582],[.865,.593]
+          [.145,.568],[.278,.522],[.400,.542],[.515,.585],
+          [.632,.595],[.764,.579],[.875,.597]
         ];
         try {
           if(worker.setParameters) await worker.setParameters({
-            tessedit_pageseg_mode:"7",
-            tessedit_char_whitelist:"0123456789"
+            tessedit_char_whitelist:"0123456789",
+            preserve_interword_spaces:"0"
           });
           for(let i=0;i<count;i++){
-            const [nx,ny]=slots[i]||[.145+i*.118,.565];
-            const cw=Math.round(w*.13),ch=Math.round(h*.045);
+            const [nx,ny]=slots[i]||[.145+i*.118,.57];
+            const cw=Math.round(w*.135),ch=Math.round(h*.052);
             const sx=Math.max(0,Math.min(w-cw,Math.round(w*nx-cw/2)));
             const sy=Math.max(0,Math.min(h-ch,Math.round(h*ny-ch/2)));
-            const crop=document.createElement("canvas");crop.width=cw;crop.height=ch;
-            const cc=crop.getContext("2d");cc.fillStyle="#fff";cc.fillRect(0,0,cw,ch);
-            cc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
-            const angle=25*Math.PI/180,scale=6;
-            const rw=Math.ceil((cw*Math.cos(angle)+ch*Math.sin(angle))*scale);
-            const rh=Math.ceil((cw*Math.sin(angle)+ch*Math.cos(angle))*scale);
-            const rot=document.createElement("canvas");rot.width=rw;rot.height=rh;
-            const rc=rot.getContext("2d");rc.fillStyle="#fff";rc.fillRect(0,0,rw,rh);
-            rc.translate(rw/2,rh/2);rc.rotate(angle);rc.scale(scale,scale);
-            rc.drawImage(crop,-cw/2,-ch/2);
-            const image=rc.getImageData(0,0,rw,rh),data=image.data;
-            for(let k=0;k<data.length;k+=4){
-              const lum=data[k]*.299+data[k+1]*.587+data[k+2]*.114;
-              const v=lum>125?0:255;data[k]=data[k+1]=data[k+2]=v;data[k+3]=255;
+            const source=document.createElement("canvas");
+            source.width=cw;source.height=ch;
+            const sc=source.getContext("2d");
+            sc.fillStyle="#fff";sc.fillRect(0,0,cw,ch);
+            sc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
+            const found=[];
+            for(const angleDeg of [20,25,30]){
+              const angle=angleDeg*Math.PI/180,scale=5;
+              const rw=Math.ceil((cw*Math.cos(angle)+ch*Math.sin(angle))*scale);
+              const rh=Math.ceil((cw*Math.sin(angle)+ch*Math.cos(angle))*scale);
+              for(const threshold of [105,135,165]){
+                const canvas=document.createElement("canvas");
+                canvas.width=rw;canvas.height=rh;
+                const ctx=canvas.getContext("2d");
+                ctx.fillStyle="#fff";ctx.fillRect(0,0,rw,rh);
+                ctx.translate(rw/2,rh/2);ctx.rotate(angle);ctx.scale(scale,scale);
+                ctx.drawImage(source,-cw/2,-ch/2);
+                const frame=ctx.getImageData(0,0,rw,rh),px=frame.data;
+                for(let k=0;k<px.length;k+=4){
+                  const lum=px[k]*.299+px[k+1]*.587+px[k+2]*.114;
+                  const v=lum>threshold?0:255;
+                  px[k]=px[k+1]=px[k+2]=v;px[k+3]=255;
+                }
+                ctx.putImageData(frame,0,0);
+                for(const psm of ["7","8","13"]){
+                  if(worker.setParameters) await worker.setParameters({
+                    tessedit_pageseg_mode:psm,
+                    tessedit_char_whitelist:"0123456789"
+                  });
+                  const res=await worker.recognize(canvas);
+                  const txt=String(res.data.text||"").replace(/\D/g,"");
+                  const conf=Number(res.data.confidence)||0;
+                  if(txt.length>=2&&txt.length<=4){
+                    const n=Number(txt);
+                    if(n>=0&&n<=9999)found.push({n,conf});
+                  } else if(i===4&&txt==="0"){
+                    found.push({n:0,conf});
+                  }
+                }
+              }
             }
-            rc.putImageData(image,0,0);
-            const result=await worker.recognize(rot);
-            const digits=String(result.data.text||"").replace(/\D/g,"");
-            // Accept only plausible label lengths; zero is a valid daily earning.
-            values.push(digits.length>=2&&digits.length<=4?Number(digits):"");
+            const ranked=new Map();
+            found.forEach(v=>{
+              const old=ranked.get(v.n)||{n:v.n,score:0,hits:0};
+              old.score+=Math.max(1,v.conf);old.hits++;ranked.set(v.n,old);
+            });
+            const choices=[...ranked.values()].sort((x,y)=>y.hits-x.hits||y.score-x.score);
+            // Require repeated agreement between independent OCR passes.
+            values.push(choices.length&&choices[0].hits>=2?choices[0].n:"");
           }
         } finally {
           if(worker.setParameters) await worker.setParameters({tessedit_char_whitelist:""});
