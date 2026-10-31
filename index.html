@@ -818,6 +818,58 @@
         color: var(--text-muted);
       }
 
+      /* MOTI PREMIUM EARNING TABLE */
+      .table-card {
+        background: linear-gradient(145deg, #102238 0%, #0b1725 62%, #171b31 100%);
+        border: 1px solid rgba(214,181,109,.28);
+        box-shadow: 0 14px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035);
+      }
+      .table-top-actions {
+        background: linear-gradient(90deg, rgba(135,54,74,.16), rgba(11,23,37,.25) 55%, rgba(214,181,109,.08));
+        border-bottom-color: rgba(214,181,109,.2);
+      }
+      .table-heading { color: #f1d99f; }
+      .table-responsive { scrollbar-color: #87536a #0b1725; scrollbar-width: thin; }
+      table.earning-table { border-spacing: 0; }
+      table.earning-table thead th {
+        position: sticky; top: 0; z-index: 2;
+        background: linear-gradient(180deg, #1b3048, #122338);
+        color: #e7d4a6;
+        border-bottom: 1px solid rgba(214,181,109,.42);
+        box-shadow: inset 0 -2px 0 rgba(135,54,74,.55);
+      }
+      table.earning-table thead th.col-zomato { color: #f0b3bd; background: linear-gradient(180deg,#492b3b,#2b2435); }
+      table.earning-table thead th.col-total { color: #f3d58f; background: linear-gradient(180deg,#493d2d,#2c2b31); }
+      table.earning-table thead th.col-daily_tgt,
+      table.earning-table thead th.col-sst_tgt { color: #b9d0e8; }
+      table.earning-table tbody tr { border-bottom: 1px solid rgba(180,202,226,.075); }
+      table.earning-table tbody tr:nth-child(even) { background: rgba(108,139,173,.045); }
+      table.earning-table tbody tr:hover { background: rgba(214,181,109,.085); }
+      table.earning-table tbody tr.row-today {
+        background: linear-gradient(90deg,rgba(135,54,74,.24),rgba(214,181,109,.055));
+        border-left: 3px solid #d6b56d;
+      }
+      table.earning-table tbody td.col-zomato { background: rgba(135,54,74,.075); }
+      table.earning-table tbody td.col-total { color: #f0d18b; font-weight: 700; background: rgba(214,181,109,.065); }
+      table.earning-table tbody td.col-daily_tgt,
+      table.earning-table tbody td.col-sst_tgt { color: #b8cce0; }
+      table.earning-table tbody td.col-diff_daily,
+      table.earning-table tbody td.col-diff { font-weight: 700; }
+      table.earning-table .cell-input-wrapper { background: rgba(5,14,25,.62); border-color: rgba(214,181,109,.2); }
+      table.earning-table .cell-input-wrapper:focus-within { border-color: #d6b56d; box-shadow: 0 0 0 2px rgba(214,181,109,.16); }
+      table.earning-table .shift-select { background-color: #102238; border-color: rgba(180,202,226,.18); }
+      table.earning-table tfoot tr {
+        background: linear-gradient(90deg,#263149,#17283c);
+        border-top: 2px solid rgba(214,181,109,.55);
+      }
+      table.earning-table tfoot td { color: #f1d99f; }
+      @media(max-width:600px) {
+        .table-top-actions { padding: .85rem 1rem; gap: .7rem; }
+        table.earning-table { font-size: .8rem; }
+        table.earning-table thead th { padding: .7rem .7rem; }
+        table.earning-table tbody td { padding: .62rem .7rem; }
+      }
+
       /* Responsive Horizontal Scroll Wrapper */
       .table-responsive {
         width: 100%;
@@ -3481,6 +3533,7 @@
           th.textContent = col.label;
           if (col.numeric) th.className = "th-num";
           if (col.id.startsWith("shift")) th.className = "th-center";
+          th.classList.add("col-" + col.id);
           theadRow.appendChild(th);
         });
 
@@ -3574,6 +3627,7 @@
                 td.textContent = "";
             }
 
+            td.classList.add("col-" + col.id);
             tr.appendChild(td);
           });
 
