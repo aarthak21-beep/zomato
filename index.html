@@ -703,6 +703,25 @@
         transition: width 0.4s ease;
       }
 
+      /* --- EARNING CALENDAR --- */
+      .earning-calendar-card { background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:1.1rem; margin-bottom:1.5rem; }
+      .earning-calendar-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:.9rem; }
+      .earning-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.4rem; }
+      .earning-calendar-weekday { text-align:center; color:var(--text-muted); font-size:.72rem; font-weight:700; padding:.35rem 0; }
+      .earning-calendar-day { min-height:76px; min-width:0; border:1px solid var(--border-subtle); border-radius:10px; padding:.45rem; background:rgba(255,255,255,.018); }
+      .earning-calendar-day.empty { border-color:transparent; background:transparent; }
+      .earning-calendar-day .day-num { color:var(--text-secondary); font-size:.72rem; }
+      .earning-calendar-day .day-amount { display:block; margin-top:.35rem; font-size:.78rem; font-weight:800; overflow-wrap:anywhere; }
+      .earning-calendar-day.no-entry { background:rgba(255,255,255,.025); }
+      .earning-calendar-day.low-entry { border-color:rgba(231,76,60,.45); background:rgba(231,76,60,.09); }
+      .earning-calendar-day.mid-entry { border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.09); }
+      .earning-calendar-day.good-entry { border-color:rgba(16,185,129,.42); background:rgba(16,185,129,.10); }
+      .earning-calendar-day.today { outline:2px solid var(--accent-primary); outline-offset:1px; }
+      .calendar-legend { display:flex; flex-wrap:wrap; gap:.8rem; margin-top:.85rem; color:var(--text-muted); font-size:.72rem; }
+      .calendar-legend span { display:inline-flex; align-items:center; gap:.3rem; }
+      .calendar-dot { width:9px; height:9px; border-radius:3px; display:inline-block; }
+      @media(max-width:600px) { .earning-calendar-card { padding:.8rem; } .earning-calendar-grid { gap:.22rem; } .earning-calendar-day { min-height:58px; padding:.28rem; border-radius:7px; } .earning-calendar-day .day-amount { font-size:.64rem; margin-top:.25rem; } .earning-calendar-day .day-num { font-size:.65rem; } .earning-calendar-weekday { font-size:.62rem; } }
+
       /* --- CHARTS ROW --- */
       .charts-row {
         display: grid;
@@ -1544,6 +1563,12 @@
                 <canvas id="shiftDonutCanvas"></canvas>
               </div>
             </div>
+          </div>
+
+          <div class="earning-calendar-card">
+            <div class="earning-calendar-head"><div><div class="chart-title">Monthly Earning Calendar</div><div class="table-meta-text">Daily earning at a glance · color indicates performance against daily target</div></div><strong id="calendar-month-total" class="tabular-nums">₹0</strong></div>
+            <div id="earning-calendar-grid" class="earning-calendar-grid" aria-label="Monthly earning calendar"></div>
+            <div class="calendar-legend"><span><i class="calendar-dot" style="background:rgba(231,76,60,.8)"></i>Below target</span><span><i class="calendar-dot" style="background:rgba(245,158,11,.8)"></i>Near target</span><span><i class="calendar-dot" style="background:rgba(16,185,129,.8)"></i>Target met</span><span><i class="calendar-dot" style="background:rgba(255,255,255,.2)"></i>No earning</span></div>
           </div>
 
           <!-- Exact Master Table Format (12 Columns) -->
@@ -2943,6 +2968,47 @@
 
         // 4. Render Charts
         renderCharts(calcData);
+        renderEarningCalendar(calcData);
+      }
+
+      function renderEarningCalendar(calcData) {
+        const grid = document.getElementById("earning-calendar-grid");
+        if (!grid) return;
+        const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        grid.innerHTML = "";
+        weekdays.forEach((name) => {
+          const label = document.createElement("div");
+          label.className = "earning-calendar-weekday";
+          label.textContent = name;
+          grid.appendChild(label);
+        });
+        const firstWeekday = new Date(AppState.currentYear, AppState.currentMonth, 1).getDay();
+        for (let i = 0; i < firstWeekday; i++) {
+          const blank = document.createElement("div");
+          blank.className = "earning-calendar-day empty";
+          grid.appendChild(blank);
+        }
+        const today = new Date();
+        calcData.rows.forEach((row) => {
+          const cell = document.createElement("div");
+          let level = "no-entry";
+          if (row.total > 0) {
+            const ratio = calcData.dailyTarget > 0 ? row.total / calcData.dailyTarget : 0;
+            level = ratio >= 1 ? "good-entry" : ratio >= .7 ? "mid-entry" : "low-entry";
+          }
+          cell.className = "earning-calendar-day " + level;
+          if (today.getFullYear() === AppState.currentYear && today.getMonth() === AppState.currentMonth && today.getDate() === row.dayNum) cell.classList.add("today");
+          const day = document.createElement("span");
+          day.className = "day-num";
+          day.textContent = row.dayNum;
+          const amount = document.createElement("strong");
+          amount.className = "day-amount tabular-nums";
+          amount.textContent = row.total > 0 ? formatCurrency(row.total) : "—";
+          cell.title = row.dateStr + ": " + formatCurrency(row.total);
+          cell.append(day, amount);
+          grid.appendChild(cell);
+        });
+        document.getElementById("calendar-month-total").textContent = formatCurrency(calcData.grandTotalActual);
       }
 
       // --- RENDER KPI DASHBOARD CARDS ---
