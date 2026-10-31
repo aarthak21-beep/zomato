@@ -4878,9 +4878,9 @@
       }
 
       function parseZomatoDailyScreenshotText(text) {
-        const normalized = String(text || "").replace(/\\s+/g, " ").replace(/,/g, "");
-        const dateMatch = normalized.match(/\\b(\\d{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\b/i);
-        const amountMatches = [...normalized.matchAll(/₹\\s*([0-9]{1,7}(?:\\.[0-9]{1,2})?)/g)];
+        const normalized = String(text || "").replace(/\s+/g, " ").replace(/,/g, "");
+        const dateMatch = normalized.match(/\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/i);
+        const amountMatches = [...normalized.matchAll(/₹\s*([0-9]{1,7}(?:\.[0-9]{1,2})?)/g)];
         const amount = amountMatches.length ? Number(amountMatches[0][1]) : NaN;
         let date = "";
         if (dateMatch) {
