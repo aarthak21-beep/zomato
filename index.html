@@ -2270,6 +2270,51 @@
         .earning-table tbody td { transition: none !important; }
       }
 
+
+      /* MOTI PREMIUM SYNC & SETTINGS EXPERIENCE */
+      #sync-status-indicator {
+        display:inline-flex; align-items:center; justify-content:center; gap:.48rem;
+        min-height:32px; padding:.38rem .72rem; color:#c5dfd2;
+        background:linear-gradient(120deg,rgba(16,185,129,.10),rgba(16,185,129,.035));
+        border-color:rgba(89,190,145,.23); white-space:nowrap;
+        font-size:.72rem; font-weight:750; letter-spacing:.18px;
+      }
+      #sync-dot { display:inline-block; flex:0 0 7px; width:7px; height:7px; border-radius:50%; background:#54c99a; }
+      #sync-now-btn { border-color:rgba(214,181,109,.24); }
+      #sync-now-btn:hover { color:#f4dfb0; border-color:rgba(214,181,109,.5); background:rgba(214,181,109,.09); }
+      #logout-btn:hover { color:#f1c2c8; border-color:rgba(190,105,125,.42); background:rgba(135,54,74,.14); }
+      #last-sync-time-text {
+        display:inline-flex; align-items:center; min-height:32px; padding:.38rem .65rem;
+        border:1px solid rgba(214,181,109,.15); border-radius:8px;
+        background:rgba(5,17,30,.38); line-height:1.4;
+      }
+      #tab-backup .report-card { padding:1.15rem; border-radius:14px; }
+      #tab-backup .report-card h4 { display:flex; align-items:center; gap:.5rem; margin-bottom:.6rem; }
+      #tab-backup .report-card p { max-width:72ch; }
+      #tab-backup .report-card[style*="244, 63, 94"] {
+        background:linear-gradient(145deg,rgba(91,35,52,.32),rgba(18,34,51,.96));
+        border-color:rgba(190,105,125,.34) !important;
+      }
+      #tab-backup .report-card[style*="244, 63, 94"] h4 { color:#efb7c1 !important; }
+      #report-history-body td[colspan] {
+        padding:1.4rem 1rem; text-align:center; color:#a9bacb; background:rgba(6,19,33,.28);
+      }
+      #toast-container .toast { animation:moti-toast-in .22s ease-out both; }
+      @keyframes moti-toast-in { from { opacity:0; transform:translateY(8px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+      @media(max-width:768px) {
+        header.app-topbar { align-items:center; }
+        .action-zone { flex-wrap:wrap; justify-content:flex-end; }
+        #sync-status-indicator { order:-1; }
+        #sync-now-btn,#logout-btn { min-height:36px; }
+        #tab-backup .report-card { padding:.95rem; }
+      }
+      @media(max-width:480px) {
+        .action-zone { width:100%; margin-left:0; justify-content:flex-start; }
+        #sync-status-indicator { margin-right:auto; }
+        #last-sync-time-text { width:100%; }
+      }
+      @media(prefers-reduced-motion:reduce) { #toast-container .toast { animation:none !important; } }
+
 </style>
   </head>
   <body>
