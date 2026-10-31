@@ -189,18 +189,26 @@
         display: inline-block;
       }
       .pearl-o {
+        position: relative;
         display: inline-block;
-        width: .82em;
-        height: .82em;
         margin: 0 .015em;
-        vertical-align: -.035em;
+        color: #f4e8c9;
+        text-shadow: 0 0 5px rgba(255,248,220,.28);
+      }
+      .pearl-o::after {
+        content: "";
+        position: absolute;
+        width: .20em;
+        height: .20em;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
         border-radius: 50%;
-        color: transparent;
-        font-size: .96em;
         background:
-          radial-gradient(circle at 30% 23%, rgba(255,255,255,.98) 0 7%, transparent 20%),
-          radial-gradient(circle at 35% 28%, #fffef5 0%, #f5edcf 42%, #d8c99e 76%, #fff9e8 100%);
-        box-shadow: inset -1px -2px 3px rgba(111,87,42,.22), 0 0 5px rgba(255,248,220,.55);
+          radial-gradient(circle at 30% 24%, #fff 0 12%, transparent 34%),
+          radial-gradient(circle at 35% 30%, #fffef6 0%, #f4e8c6 58%, #cdbb8d 100%);
+        box-shadow: 0 0 3px rgba(255,248,220,.75), inset -1px -1px 1px rgba(111,87,42,.18);
+        pointer-events: none;
       }
       .auth-title {
         font-size: 1.35rem;
