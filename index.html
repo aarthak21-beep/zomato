@@ -703,6 +703,14 @@
         transition: width 0.4s ease;
       }
 
+      .report-history-card { margin-top:1.25rem; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:1.1rem; }
+      .report-history-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+      .report-history-table th,.report-history-table td { padding:.75rem .65rem; border-bottom:1px solid var(--border-subtle); text-align:left; white-space:nowrap; }
+      .report-history-table th { color:var(--text-muted); font-size:.72rem; text-transform:uppercase; }
+      .report-history-table td.num { text-align:right; font-variant-numeric:tabular-nums; }
+      .report-history-wrap { overflow-x:auto; }
+      @media(max-width:600px) { .report-history-card { padding:.8rem; } .report-history-table { font-size:.76rem; } .report-history-table th,.report-history-table td { padding:.6rem .45rem; } }
+
       /* --- EARNING CALENDAR --- */
       .earning-calendar-card { background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:1.1rem; margin-bottom:1.5rem; }
       .earning-calendar-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:.9rem; }
@@ -1722,7 +1730,11 @@
               </div>
             </div>
           </div>
-        </section>
+          <div class="report-history-card">
+            <div class="chart-header"><div><div class="chart-title">Previous Months Reports</div><div class="table-meta-text">All saved months · select View Report to open a month</div></div></div>
+            <div class="report-history-wrap"><table class="report-history-table"><thead><tr><th>Month</th><th style="text-align:right">Total Earning</th><th style="text-align:right">Target</th><th style="text-align:right">Difference</th><th style="text-align:right">Active Days</th><th></th></tr></thead><tbody id="report-history-body"><tr><td colspan="6">No previous reports found.</td></tr></tbody></table></div>
+          </div>
+</section>
 
         <!-- ================= SETTINGS & BACKUP VIEW ================= -->
         <section id="view-settings" style="display: none;">
@@ -3495,6 +3507,52 @@
         });
       }
 
+      function renderReportHistory() {
+        const body = document.getElementById("report-history-body");
+        if (!body) return;
+        const months = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const match = key && key.match(/^zomato_data_(\\d{4})_(\\d{1,2})$/);
+          if (!match) continue;
+          const year = Number(match[1]);
+          const month = Number(match[2]);
+          try {
+            const data = JSON.parse(localStorage.getItem(key) || "{}");
+            const days = data.days || {};
+            const total = Object.values(days).reduce((sum, day) => sum + (parseFloat(day && day.zomato) || 0), 0);
+            const activeDays = Object.values(days).filter(day => (parseFloat(day && day.zomato) || 0) > 0).length;
+            const target = parseFloat(data.monthlyTarget) || AppState.settings.defaultMonthlyTarget || 0;
+            months.push({ year, month, total, target, activeDays });
+          } catch (e) { }
+        }
+        months.sort((a,b) => b.year - a.year || b.month - a.month);
+        body.innerHTML = "";
+        if (!months.length) {
+          body.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted)">No saved monthly reports found yet.</td></tr>';
+          return;
+        }
+        months.forEach(item => {
+          const tr = document.createElement("tr");
+          const diff = item.total - item.target;
+          const monthLabel = `${MONTH_NAMES[item.month]} ${item.year}`;
+          tr.innerHTML = `<td><strong>${monthLabel}</strong></td><td class="num">${formatCurrency(item.total)}</td><td class="num">${formatCurrency(item.target)}</td><td class="num" style="color:${diff >= 0 ? "var(--green-pos)" : "var(--red-neg)"}">${diff >= 0 ? "+" : ""}${formatCurrency(diff)}</td><td class="num">${item.activeDays}</td><td><button class="btn btn-secondary btn-sm" data-report-year="${item.year}" data-report-month="${item.month}">View Report</button></td>`;
+          body.appendChild(tr);
+        });
+        body.querySelectorAll("[data-report-year]").forEach(button => {
+          button.addEventListener("click", () => {
+            AppState.currentYear = Number(button.dataset.reportYear);
+            AppState.currentMonth = Number(button.dataset.reportMonth);
+            document.getElementById("month-select").value = AppState.currentMonth;
+            document.getElementById("year-select").value = AppState.currentYear;
+            loadMonthData(AppState.currentYear, AppState.currentMonth);
+            renderAll();
+            renderReports();
+            showToast(`Showing ${MONTH_NAMES[AppState.currentMonth]} ${AppState.currentYear} report`);
+          });
+        });
+      }
+
       // --- REPORTS ENGINE ---
       function renderReports() {
         const calcData = calculateMonthRows();
@@ -3600,6 +3658,7 @@
 
         document.getElementById("rep-weekend-total").textContent = formatCurrency(weekendTotal);
         document.getElementById("rep-weekend-avg").textContent = formatCurrency(weekendDays > 0 ? weekendTotal / weekendDays : 0);
+        renderReportHistory();
       }
 
       // --- CSV EXPORT ENGINE ---
