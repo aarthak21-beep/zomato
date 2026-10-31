@@ -4926,7 +4926,7 @@
             const crop=document.createElement("canvas");crop.width=cw;crop.height=ch;
             const cc=crop.getContext("2d");cc.fillStyle="#fff";cc.fillRect(0,0,cw,ch);
             cc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
-            const angle=25*Math.PI/180,scale=6;
+            const angle=-25*Math.PI/180,scale=6;
             const rw=Math.ceil((cw*Math.cos(angle)+ch*Math.sin(angle))*scale);
             const rh=Math.ceil((cw*Math.sin(angle)+ch*Math.cos(angle))*scale);
             const rot=document.createElement("canvas");rot.width=rw;rot.height=rh;
