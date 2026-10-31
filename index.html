@@ -4879,8 +4879,7 @@
 
       function parseZomatoDailyScreenshotText(text) {
         const normalized = String(text || "").replace(/,/g, "").replace(/\s+/g, " ");
-        const monthPattern = "(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)";
-        const dateMatch = normalized.match(new RegExp("\b(\d{1,2})\s+" + monthPattern + "\b", "i"));
+        const dateMatch = normalized.match(/\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/i);
         const monthNames = ["january","february","march","april","may","june","july","august","september","october","november","december"];
         const monthShort = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
         let date = "";
@@ -4890,11 +4889,9 @@
           if (monthIndex < 0) monthIndex = monthShort.indexOf(monthText.slice(0,3));
           if (monthIndex >= 0) {
             const year = new Date().getFullYear();
-            date = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(Number(dateMatch[1])).padStart(2, "0")}`;
+            date = String(year) + "-" + String(monthIndex + 1).padStart(2, "0") + "-" + String(Number(dateMatch[1])).padStart(2, "0");
           }
         }
-        // The large total is the first currency amount on the Day screen.
-        // If OCR misses the rupee glyph, fall back to the first decimal currency-like number.
         const currencyMatches = [...normalized.matchAll(/[₹रRs.]*\s*([0-9]{1,7}\.[0-9]{1,2})/gi)];
         const amount = currencyMatches.length ? Number(currencyMatches[0][1]) : NaN;
         return { date, amount, dateFound: !!date, amountFound: Number.isFinite(amount) };
