@@ -362,6 +362,23 @@
         border-color: rgba(226,55,68,.8);
         box-shadow: 0 0 0 4px rgba(226,55,68,.13), 0 5px 18px rgba(0,0,0,.2);
       }
+      .password-input-wrap { position: relative; }
+      .password-input-wrap input { padding-right: 3.2rem !important; }
+      .password-eye-btn {
+        position: absolute;
+        top: 50%;
+        right: .85rem;
+        transform: translateY(-50%);
+        border: 0;
+        background: transparent;
+        color: #c9c5ca;
+        padding: .35rem;
+        line-height: 1;
+        font-size: 1.05rem;
+        cursor: pointer;
+        opacity: .8;
+      }
+      .password-eye-btn:hover { opacity: 1; color: #f2dfc1; }
       #login-form .btn-primary {
         min-height: 49px;
         border-radius: 12px;
@@ -1270,7 +1287,10 @@
           </div>
           <div class="auth-input-group">
             <label for="login-password">Password</label>
-            <input type="password" id="login-password" required autocomplete="current-password" placeholder="Enter password" />
+            <div class="password-input-wrap">
+              <input type="password" id="login-password" required autocomplete="current-password" placeholder="Enter password" />
+              <button type="button" id="toggle-login-password" class="password-eye-btn" aria-label="Show password" aria-pressed="false">👁</button>
+            </div>
           </div>
 
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
@@ -2315,6 +2335,15 @@
       function setupEventListeners() {
         // Auth Form
         const loginForm = document.getElementById("login-form");
+        const loginPassword = document.getElementById("login-password");
+        const passwordEye = document.getElementById("toggle-login-password");
+        passwordEye.addEventListener("click", () => {
+          const show = loginPassword.type === "password";
+          loginPassword.type = show ? "text" : "password";
+          passwordEye.textContent = show ? "🙈" : "👁";
+          passwordEye.setAttribute("aria-label", show ? "Hide password" : "Show password");
+          passwordEye.setAttribute("aria-pressed", String(show));
+        });
         document.getElementById("forgot-password-btn").addEventListener("click", () => {
           ["reset-username", "reset-recovery-pin", "reset-new-password", "reset-confirm-password"].forEach((id) => {
             document.getElementById(id).value = "";
