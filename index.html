@@ -4907,99 +4907,40 @@
 
       async function readWeeklyGraphAmounts(file, worker, count, ocrText, fullWords) {
         const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=[],debugImages=[];
-        // Dedicated weekly-label OCR: multi-pass crops, deskew angles and contrast thresholds.
-        const slots=[
-          [.145,.568],[.278,.522],[.400,.542],[.515,.585],
-          [.632,.595],[.764,.579],[.875,.597]
-        ];
+        const slots=[[.145,.568],[.278,.522],[.400,.542],[.515,.585],[.632,.595],[.764,.579],[.875,.597]];
         try {
-          if(worker.setParameters) await worker.setParameters({
-            tessedit_char_whitelist:"0123456789",
-            preserve_interword_spaces:"0"
-          });
           for(let i=0;i<count;i++){
-            const [nx,ny]=slots[i]||[.145+i*.118,.57];
-            const cw=Math.round(w*.145),ch=Math.round(h*.12);
-            const sx=Math.max(0,Math.min(w-cw,Math.round(w*nx-cw/2)));
-            const sy=Math.max(0,Math.min(h-ch,Math.round(h*ny-ch/2)));
-            const source=document.createElement("canvas");
-            source.width=cw;source.height=ch;
-            const sc=source.getContext("2d");
-            sc.fillStyle="#fff";sc.fillRect(0,0,cw,ch);
-            sc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
-            debugImages.push(source.toDataURL("image/png"));
-            const found=[];
-            for(const angleDeg of [20,25,30]){
-              const angle=angleDeg*Math.PI/180,scale=5;
-              const rw=Math.ceil((cw*Math.cos(angle)+ch*Math.sin(angle))*scale);
-              const rh=Math.ceil((cw*Math.sin(angle)+ch*Math.cos(angle))*scale);
-              for(const threshold of [105,135,165]){
-                const canvas=document.createElement("canvas");
-                canvas.width=rw;canvas.height=rh;
-                const ctx=canvas.getContext("2d");
-                ctx.fillStyle="#fff";ctx.fillRect(0,0,rw,rh);
-                ctx.translate(rw/2,rh/2);ctx.rotate(angle);ctx.scale(scale,scale);
-                ctx.drawImage(source,-cw/2,-ch/2);
-                const frame=ctx.getImageData(0,0,rw,rh),px=frame.data;
-                for(let k=0;k<px.length;k+=4){
-                  const lum=px[k]*.299+px[k+1]*.587+px[k+2]*.114;
-                  const v=lum>threshold?0:255;
-                  px[k]=px[k+1]=px[k+2]=v;px[k+3]=255;
-                }
-                ctx.putImageData(frame,0,0);
-                for(const psm of ["7","8","13"]){
-                  if(worker.setParameters) await worker.setParameters({
-                    tessedit_pageseg_mode:psm,
-                    tessedit_char_whitelist:"0123456789"
-                  });
-                  const res=await worker.recognize(canvas);
-                  const txt=String(res.data.text||"").replace(/\D/g,"");
-                  const conf=Number(res.data.confidence)||0;
-                  if(txt.length>=2&&txt.length<=4){
-                    const n=Number(txt);
-                    if(n>=0&&n<=9999)found.push({n,conf});
-                  } else if(i===4&&txt==="0"){
-                    found.push({n:0,conf});
-                  }
+            const [nx,ny]=slots[i]||[.145+i*.118,.57],cw=Math.round(w*.145),ch=Math.round(h*.12);
+            const sx=Math.max(0,Math.min(w-cw,Math.round(w*nx-cw/2))),sy=Math.max(0,Math.min(h-ch,Math.round(h*ny-ch/2)));
+            const src=document.createElement("canvas");src.width=cw;src.height=ch;
+            const sc=src.getContext("2d");sc.fillStyle="#fff";sc.fillRect(0,0,cw,ch);sc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
+            debugImages.push(src.toDataURL("image/png"));
+            const votes=[];
+            for(const deg of [-30,-25,-20,20,25,30]){
+              const rad=deg*Math.PI/180,z=7,rw=Math.ceil((cw*Math.cos(rad)+ch*Math.sin(rad))*z),rh=Math.ceil((cw*Math.sin(rad)+ch*Math.cos(rad))*z);
+              const c=document.createElement("canvas");c.width=rw;c.height=rh;
+              const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,rw,rh);x.translate(rw/2,rh/2);x.rotate(rad);x.scale(z,z);x.drawImage(src,-cw/2,-ch/2);
+              const im=x.getImageData(0,0,rw,rh),bin=x.createImageData(rw,rh);
+              for(let k=0;k<im.data.length;k+=4){const q=im.data[k]*.299+im.data[k+1]*.587+im.data[k+2]*.114,v=q>158?255:0;bin.data[k]=bin.data[k+1]=bin.data[k+2]=v;bin.data[k+3]=255;}
+              for(const frame of [im,bin]){
+                const p=document.createElement("canvas");p.width=rw;p.height=rh;p.getContext("2d").putImageData(frame,0,0);
+                for(const mode of ["11","12","13"]){
+                  await worker.setParameters({tessedit_pageseg_mode:mode,tessedit_char_whitelist:"0123456789"});
+                  const out=await worker.recognize(p),digits=String(out.data.text||"").replace(/[^0-9]/g,""),n=Number(digits),conf=Number(out.data.confidence)||0;
+                  if(digits.length<=4&&((n>=30&&n<=9999)||(i===4&&digits==="0")))votes.push({n,conf});
                 }
               }
             }
-            const ranked=new Map();
-            found.forEach(v=>{
-              const old=ranked.get(v.n)||{n:v.n,score:0,hits:0};
-              old.score+=Math.max(1,v.conf);old.hits++;ranked.set(v.n,old);
-            });
-            const choices=[...ranked.values()].sort((x,y)=>y.hits-x.hits||y.score-x.score);
-            // Keep the strongest plausible OCR candidate for manual review in the preview.
-            // Requiring two identical passes was too strict and left every field blank.
-            values.push(choices.length&&choices[0].score>0?choices[0].n:"");
+            const counts=new Map();votes.forEach(v=>{const q=counts.get(v.n)||{n:v.n,hits:0,conf:0};q.hits++;q.conf=Math.max(q.conf,v.conf);counts.set(v.n,q);});
+            const best=[...counts.values()].sort((u,v)=>v.hits-u.hits||v.conf-u.conf)[0];
+            values.push(best&&(best.hits>=2||best.conf>=82)?best.n:"");
           }
-        } finally {
-          if(worker.setParameters) await worker.setParameters({tessedit_char_whitelist:""});
-          bitmap.close();
-        }
-        // Fallback: reuse numeric words recognized in the full-screen OCR, but only
-        // when their bounding boxes sit in the chart-label band and near that day's bar.
+        } finally {await worker.setParameters({tessedit_char_whitelist:""});bitmap.close();}
         if(Array.isArray(fullWords)){
           const centers=[.135,.257,.379,.500,.621,.743,.865];
-          for(let i=0;i<count;i++){
-            if(values[i]!==""&&values[i]!==undefined)continue;
-            const cx=centers[i]||(.135+i*.121);
-            const candidates=fullWords.map(word=>{
-              const box=word&&word.bbox||{};
-              const x=((Number(box.x0)||0)+(Number(box.x1)||0))/2;
-              const y=((Number(box.y0)||0)+(Number(box.y1)||0))/2;
-              const raw=String(word.text||"").replace(/,/g,"");
-              const digits=raw.replace(/[^0-9]/g,"");
-              return {x,y,digits,confidence:Number(word.confidence)||0};
-            }).filter(v=>{
-              const isZeroLabel=i===4&&v.digits==="0";
-              // Exclude x-axis day numbers; weekly earnings labels are 3-4 digits,
-              // except the genuine zero-earning day at index 4.
-              const isAmount=v.digits.length>=3&&v.digits.length<=4&&Number(v.digits)!==2026&&Number(v.digits)!==2025&&Number(v.digits)!==2027;
-              return (isAmount||isZeroLabel)&&v.x>=w*(cx-.075)&&v.x<=w*(cx+.075)&&v.y>=h*.47&&v.y<=h*.61;
-            }).sort((a,b)=>Math.abs(a.x-w*cx)+Math.abs(a.y-h*.55)-Math.abs(b.x-w*cx)-Math.abs(b.y-h*.55));
-            if(candidates.length)values[i]=Number(candidates[0].digits);
+          for(let i=0;i<count;i++)if(values[i]===""){
+            const cx=centers[i],cand=fullWords.map(word=>{const box=word.bbox||{},digits=String(word.text||"").replace(/[^0-9]/g,"");return{x:(Number(box.x0)+Number(box.x1))/2,y:(Number(box.y0)+Number(box.y1))/2,digits};}).filter(v=>{const n=Number(v.digits);return ((v.digits.length>=2&&v.digits.length<=4&&n>=30&&n<=9999)||(i===4&&v.digits==="0"))&&v.x>=w*(cx-.075)&&v.x<=w*(cx+.075)&&v.y>=h*.47&&v.y<=h*.61;}).sort((u,v)=>Math.abs(u.x-w*cx)+Math.abs(u.y-h*.55)-Math.abs(v.x-w*cx)-Math.abs(v.y-h*.55));
+            if(cand.length)values[i]=Number(cand[0].digits);
           }
         }
         return {amounts:values,estimated:false,debugImages};
