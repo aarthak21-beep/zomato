@@ -4992,8 +4992,13 @@
               const raw=String(word.text||"").replace(/,/g,"");
               const digits=raw.replace(/[^0-9]/g,"");
               return {x,y,digits,confidence:Number(word.confidence)||0};
-            }).filter(v=>v.digits.length>=1&&v.digits.length<=4&&v.x>=w*(cx-.075)&&v.x<=w*(cx+.075)&&v.y>=h*.47&&v.y<=h*.625)
-              .sort((a,b)=>Math.abs(a.x-w*cx)+Math.abs(a.y-h*.55)-Math.abs(b.x-w*cx)-Math.abs(b.y-h*.55));
+            }).filter(v=>{
+              const isZeroLabel=i===4&&v.digits==="0";
+              // Exclude x-axis day numbers; weekly earnings labels are 3-4 digits,
+              // except the genuine zero-earning day at index 4.
+              const isAmount=v.digits.length>=3&&v.digits.length<=4;
+              return (isAmount||isZeroLabel)&&v.x>=w*(cx-.075)&&v.x<=w*(cx+.075)&&v.y>=h*.47&&v.y<=h*.61;
+            }).sort((a,b)=>Math.abs(a.x-w*cx)+Math.abs(a.y-h*.55)-Math.abs(b.x-w*cx)-Math.abs(b.y-h*.55));
             if(candidates.length)values[i]=Number(candidates[0].digits);
           }
         }
