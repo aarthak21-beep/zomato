@@ -2964,7 +2964,7 @@
               </div>
               <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. फक्त Day tab चा screenshot वापरा. Total earning मध्ये incentive समाविष्ट असते.</div>
               <div id="screenshot-import-preview" style="display:none;margin-top:1rem;padding:1rem;border:1px solid rgba(214,181,109,.28);border-radius:12px;background:rgba(5,12,20,.38);">
-                <div id="screenshot-daily-fields"><div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div><div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div></div><div id="screenshot-weekly-fields" style="display:none;"><p class="form-help">Weekly total import होणार नाही. Graph मधील प्रत्येक दिवसाची रक्कम खाली तपासा.</p><div id="screenshot-weekly-rows"></div></div>
+                <div id="screenshot-daily-fields"><div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div><div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div></div><div id="screenshot-weekly-fields" style="display:none;"><p class="form-help">Weekly total import होणार नाही. खाली 7 daily amounts भरा. एकाच वेळी 7 amounts paste करू शकता (उदा. 916, 2321, 1727, 205, 0, 342, 37).</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0"><input id="screenshot-weekly-paste" type="text" placeholder="7 amounts comma separated" style="flex:1;min-width:220px"><button type="button" id="screenshot-weekly-fill" class="btn btn-secondary btn-sm">Fill 7 days</button></div><div id="screenshot-weekly-rows"></div></div>
                 <p id="screenshot-import-duplicate" class="form-help" style="margin:.5rem 0 1rem;"></p>
                 <div style="display:flex;gap:.65rem;flex-wrap:wrap;">
                   <button type="button" id="screenshot-import-confirm" class="btn btn-primary btn-sm">✓ Confirm Import</button>
@@ -3858,6 +3858,14 @@
         // Zomato Partner daily screenshot OCR import
         document.getElementById("zomato-earning-screenshot").addEventListener("change", handleZomatoScreenshot);
         document.getElementById("screenshot-import-confirm").addEventListener("click", confirmZomatoScreenshotImport);
+        document.getElementById("screenshot-weekly-fill").addEventListener("click",()=>{
+          const raw=document.getElementById("screenshot-weekly-paste").value.trim();
+          const nums=raw.split(/[ ,;\n\t]+/).filter(Boolean);
+          if(nums.length!==7||nums.some(v=>!/^\d+(?:\.\d{1,2})?$/.test(v))){showToast("7 amounts comma separated टाका.","error");return;}
+          nums.forEach((v,i)=>{const input=document.querySelector('#screenshot-weekly-rows input[data-week-amount="'+i+'"]');if(input)input.value=v;});
+          showToast("7 daily amounts भरले.");
+        });
+
         document.getElementById("screenshot-import-cancel").addEventListener("click", resetZomatoScreenshotImport);
         document.getElementById("screenshot-import-date").addEventListener("change", updateZomatoScreenshotDuplicateHint);
         document.getElementById("screenshot-import-amount").addEventListener("input", updateZomatoScreenshotDuplicateHint);
@@ -4969,18 +4977,11 @@
           try{
             const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h,result.data.imageSize?.w);
             if(weekly){
-              status.textContent="Weekly Graph मधील सात Amount वेगवेगळे वाचत आहे…";
-              // Use a dedicated OCR worker for graph labels so the main screenshot
-              // recognition settings/state cannot interfere with weekly crop recognition.
-              const weeklyWorker=await T.createWorker("eng");
-              let graphResult;
-              try {
-                graphResult=await readWeeklyGraphAmounts(file,weeklyWorker,weekly.length,result.data.text,result.data.words);
-              } finally {
-                await weeklyWorker.terminate();
-              }
-              const graphAmounts=graphResult.amounts;
-              weekly.forEach((row,i)=>row.amount=graphAmounts[i]);
+              status.textContent="Week dates वाचल्या. आता 7 daily amounts भरा किंवा एकत्र paste करा.";
+              // Skip unreliable graph OCR; show the seven date/amount fields immediately.
+              // This avoids long waits and prevents guessed amounts from being imported.
+              const graphResult={amounts:weekly.map(()=>""),debugImages:[]};
+              weekly.forEach(row=>row.amount="");
               pendingZomatoScreenshotImport={type:"week"};
               document.getElementById("screenshot-daily-fields").style.display="none";
               document.getElementById("screenshot-weekly-fields").style.display="block";
