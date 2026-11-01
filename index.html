@@ -4978,12 +4978,12 @@
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
               let debug=document.getElementById("screenshot-weekly-debug");
-              if(!debug){debug=document.createElement("div");debug.id="screenshot-weekly-debug";debug.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin-top:1rem";document.getElementById("screenshot-weekly-fields").append(debug);}
+              if(!debug){debug=document.createElement("div");debug.id="screenshot-weekly-debug";debug.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-top:1rem";document.getElementById("screenshot-weekly-fields").append(debug);}
               debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>OCR ने वाचलेले Crop तपासा</p>";
               (graphResult.debugImages||[]).forEach((src,i)=>{
                 const card=document.createElement("div");card.style.cssText="min-width:0;padding:.4rem;border:1px solid var(--border-subtle);border-radius:8px";
                 const label=document.createElement("div");label.textContent="Day "+(i+1);label.style.cssText="font-size:.75rem;margin-bottom:.25rem";
-                const image=document.createElement("img");image.src=src;image.alt="Weekly graph OCR crop day "+(i+1);image.style.cssText="display:block;width:100%;height:64px;object-fit:contain;background:#fff;border-radius:4px";
+                const image=document.createElement("img");image.src=src;image.alt="Weekly graph OCR crop day "+(i+1);image.style.cssText="display:block;width:100%;height:112px;object-fit:contain;image-rendering:pixelated;background:#fff;border-radius:4px";
                 card.append(label,image);debug.append(card);
               });
               status.textContent="Weekly Graph OCR पूर्ण. भरलेले Amount अंदाजे OCR candidates आहेत—प्रत्येक रक्कम मूळ Graph शी तपासा व गरज असल्यास edit करा. Weekly total import होणार नाही.";
