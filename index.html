@@ -4918,16 +4918,16 @@
             debugImages.push(src.toDataURL("image/png"));
             const votes=[];
             // Labels rise toward the right; +30deg in canvas coordinates deskews them.
-            for(const deg of [20,25,30,35,-20,-25,-30]){
+            for(const deg of [25,30,35]){
               const rad=deg*Math.PI/180,z=8,rw=Math.ceil((cw*Math.abs(Math.cos(rad))+ch*Math.abs(Math.sin(rad)))*z),rh=Math.ceil((cw*Math.abs(Math.sin(rad))+ch*Math.abs(Math.cos(rad)))*z);
               const c=document.createElement("canvas");c.width=rw;c.height=rh;
               const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,rw,rh);x.translate(rw/2,rh/2);x.rotate(rad);x.scale(z,z);x.drawImage(src,-cw/2,-ch/2);
               const im=x.getImageData(0,0,rw,rh);
-              for(const threshold of [105,135,165,195]){
+              for(const threshold of [125,165]){
                 const p=document.createElement("canvas");p.width=rw;p.height=rh;const pc=p.getContext("2d"),bin=pc.createImageData(rw,rh);
                 for(let k=0;k<im.data.length;k+=4){const q=im.data[k]*.299+im.data[k+1]*.587+im.data[k+2]*.114,v=q>threshold?255:0;bin.data[k]=bin.data[k+1]=bin.data[k+2]=v;bin.data[k+3]=255;}
                 pc.putImageData(bin,0,0);
-                for(const mode of ["7","13","11"]){
+                for(const mode of ["7","13"]){
                   await worker.setParameters({tessedit_pageseg_mode:mode,tessedit_char_whitelist:"0123456789"});
                   const out=await worker.recognize(p),digits=String(out.data.text||"").replace(/[^0-9]/g,""),n=Number(digits),conf=Number(out.data.confidence)||0;
                   if(digits.length>=1&&digits.length<=4&&((n>=0&&n<=9999)||(digits==="0")))votes.push({n,conf});
