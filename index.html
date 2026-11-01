@@ -4909,7 +4909,7 @@
         const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=Array(count).fill(""),votes=Array.from({length:count},()=>[]),debugImages=[];
         // Read the complete tilted value-label band in one pass. The previous seven
         // narrow fixed crops clipped the digits and sometimes captured the year/date.
-        const sx=Math.round(w*.055),sy=Math.round(h*.382),sw=Math.round(w*.89),sh=Math.round(h*.105);
+        const sx=Math.round(w*.055),sy=Math.round(h*.485),sw=Math.round(w*.89),sh=Math.round(h*.145);
         const source=document.createElement("canvas");source.width=sw;source.height=sh;
         const sourceCtx=source.getContext("2d");sourceCtx.drawImage(bitmap,sx,sy,sw,sh,0,0,sw,sh);
         debugImages.push(source.toDataURL("image/png"));
@@ -4940,9 +4940,9 @@
                 // Inverse of the canvas rotation: locate this OCR word in the original screenshot.
                 const ox=sx+Math.cos(rad)*tx+Math.sin(rad)*ty;
                 const oy=sy-Math.sin(rad)*tx+Math.cos(rad)*ty;
-                const dayCenters=Array.from({length:count},(_,i)=>w*(.136+i*.123));
+                const dayCenters=Array.from({length:count},(_,i)=>w*(.135+i*.122));
                 let nearest=0;for(let i=1;i<count;i++)if(Math.abs(ox-dayCenters[i])<Math.abs(ox-dayCenters[nearest]))nearest=i;
-                if(Math.abs(ox-dayCenters[nearest])>w*.065||oy< h*.385||oy>h*.475)continue;
+                if(Math.abs(ox-dayCenters[nearest])>w*.065||oy< h*.49||oy>h*.63)continue;
                 votes[nearest].push({n,conf});
               }
             }
