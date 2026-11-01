@@ -4906,53 +4906,52 @@
       }
 
       async function readWeeklyGraphAmounts(file, worker, count, ocrText, fullWords) {
-        const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=Array(count).fill(""),votes=Array.from({length:count},()=>[]),debugImages=[];
-        // Read the complete tilted value-label band in one pass. The previous seven
-        // narrow fixed crops clipped the digits and sometimes captured the year/date.
-        const sx=Math.round(w*.055),sy=Math.round(h*.485),sw=Math.round(w*.89),sh=Math.round(h*.145);
-        const source=document.createElement("canvas");source.width=sw;source.height=sh;
-        const sourceCtx=source.getContext("2d");sourceCtx.drawImage(bitmap,sx,sy,sw,sh,0,0,sw,sh);
-        debugImages.push(source.toDataURL("image/png"));
+        const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=[],debugImages=[];
+        // Use a generous per-day label window. The latest preview showed the labels
+        // were present in the graph crop, but the rotated full-band OCR discarded them
+        // during coordinate filtering. Isolate each day without clipping the tilted text.
+        const centers=Array.from({length:count},(_,i)=>w*(.135+i*.122));
         try {
-          for(const deg of [25,30,35]){
-            const rad=deg*Math.PI/180,z=4;
-            const rw=Math.ceil((sw*Math.abs(Math.cos(rad))+sh*Math.abs(Math.sin(rad)))*z);
-            const rh=Math.ceil((sw*Math.abs(Math.sin(rad))+sh*Math.abs(Math.cos(rad)))*z);
-            const rotated=document.createElement("canvas");rotated.width=rw;rotated.height=rh;
-            const rc=rotated.getContext("2d");rc.fillStyle="#fff";rc.fillRect(0,0,rw,rh);
-            rc.translate(rw/2,rh/2);rc.rotate(rad);rc.scale(z,z);rc.drawImage(source,-sw/2,-sh/2);
-            const imageData=rc.getImageData(0,0,rw,rh);
-            for(const threshold of [135,170]){
-              const prep=document.createElement("canvas");prep.width=rw;prep.height=rh;
-              const pc=prep.getContext("2d"),bin=pc.createImageData(rw,rh);
-              for(let k=0;k<imageData.data.length;k+=4){
-                const lum=imageData.data[k]*.299+imageData.data[k+1]*.587+imageData.data[k+2]*.114;
-                const v=lum>threshold?255:0;bin.data[k]=bin.data[k+1]=bin.data[k+2]=v;bin.data[k+3]=255;
-              }
-              pc.putImageData(bin,0,0);
-              await worker.setParameters({tessedit_pageseg_mode:"11",tessedit_char_whitelist:"0123456789",preserve_interword_spaces:"1"});
-              const out=await worker.recognize(prep);
-              for(const word of (out.data.words||[])){
-                const digits=String(word.text||"").replace(/[^0-9]/g,"");
-                const conf=Number(word.confidence)||0,n=Number(digits);
-                if(!digits||digits.length>4||n>9999||conf<25)continue;
-                const bb=word.bbox||{},tx=((Number(bb.x0)+Number(bb.x1))/2-rw/2)/z,ty=((Number(bb.y0)+Number(bb.y1))/2-rh/2)/z;
-                // Inverse of the canvas rotation: locate this OCR word in the original screenshot.
-                const ox=sx+Math.cos(rad)*tx+Math.sin(rad)*ty;
-                const oy=sy-Math.sin(rad)*tx+Math.cos(rad)*ty;
-                const dayCenters=Array.from({length:count},(_,i)=>w*(.135+i*.122));
-                let nearest=0;for(let i=1;i<count;i++)if(Math.abs(ox-dayCenters[i])<Math.abs(ox-dayCenters[nearest]))nearest=i;
-                if(Math.abs(ox-dayCenters[nearest])>w*.065||oy< h*.49||oy>h*.63)continue;
-                votes[nearest].push({n,conf});
+          for(let i=0;i<count;i++){
+            const cw=Math.round(w*.155),ch=Math.round(h*.19);
+            const sx=Math.max(0,Math.min(w-cw,Math.round(centers[i]-cw/2)));
+            const sy=Math.round(h*.435);
+            const crop=document.createElement("canvas");crop.width=cw;crop.height=ch;
+            const cc=crop.getContext("2d");cc.fillStyle="#fff";cc.fillRect(0,0,cw,ch);
+            cc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
+            debugImages.push(crop.toDataURL("image/png"));
+            const votes=[];
+            for(const deg of [20,25,30]){
+              const rad=deg*Math.PI/180,z=7;
+              const rw=Math.ceil((cw*Math.abs(Math.cos(rad))+ch*Math.abs(Math.sin(rad)))*z);
+              const rh=Math.ceil((cw*Math.abs(Math.sin(rad))+ch*Math.abs(Math.cos(rad)))*z);
+              const rotated=document.createElement("canvas");rotated.width=rw;rotated.height=rh;
+              const rc=rotated.getContext("2d");rc.fillStyle="#fff";rc.fillRect(0,0,rw,rh);
+              rc.translate(rw/2,rh/2);rc.rotate(rad);rc.scale(z,z);rc.drawImage(crop,-cw/2,-ch/2);
+              const raw=rc.getImageData(0,0,rw,rh);
+              for(const threshold of [95,125,155]){
+                const prep=document.createElement("canvas");prep.width=rw;prep.height=rh;
+                const pc=prep.getContext("2d"),bin=pc.createImageData(rw,rh);
+                for(let k=0;k<raw.data.length;k+=4){
+                  const lum=raw.data[k]*.299+raw.data[k+1]*.587+raw.data[k+2]*.114;
+                  const v=lum>threshold?255:0;bin.data[k]=bin.data[k+1]=bin.data[k+2]=v;bin.data[k+3]=255;
+                }
+                pc.putImageData(bin,0,0);
+                for(const mode of ["7","8","13"]){
+                  await worker.setParameters({tessedit_pageseg_mode:mode,tessedit_char_whitelist:"0123456789"});
+                  const out=await worker.recognize(prep);
+                  const candidates=[String(out.data.text||""),...(out.data.words||[]).map(x=>String(x.text||""))];
+                  for(const candidate of candidates){
+                    const matches=candidate.replace(/,/g,"").match(/\d{1,4}/g)||[];
+                    for(const digits of matches){const n=Number(digits);if(n>=0&&n<=9999)votes.push(n);}
+                  }
+                }
               }
             }
-          }
-          for(let i=0;i<count;i++){
-            const grouped=new Map();
-            votes[i].forEach(v=>{const q=grouped.get(v.n)||{n:v.n,hits:0,confidence:0};q.hits++;q.confidence=Math.max(q.confidence,v.conf);grouped.set(v.n,q);});
-            const ranked=[...grouped.values()].sort((a,b)=>b.hits-a.hits||b.confidence-a.confidence);
-            const best=ranked[0],runner=ranked[1];
-            if(best&&best.hits>=2&&(!runner||best.hits>runner.hits))values[i]=best.n;
+            const counts=new Map();votes.forEach(n=>counts.set(n,(counts.get(n)||0)+1));
+            const ranked=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
+            if(ranked[0]&&ranked[0][1]>=2&&(!ranked[1]||ranked[0][1]>ranked[1][1]))values.push(ranked[0][0]);
+            else values.push("");
           }
         } finally {
           await worker.setParameters({tessedit_char_whitelist:""});
@@ -4995,11 +4994,11 @@
               });
               let debug=document.getElementById("screenshot-weekly-debug");
               if(!debug){debug=document.createElement("div");debug.id="screenshot-weekly-debug";debug.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-top:1rem";document.getElementById("screenshot-weekly-fields").append(debug);}
-              debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>OCR साठी वापरलेला पूर्ण Graph भाग तपासा</p>";
+              debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>प्रत्येक दिवसाचा मोठा Amount Crop तपासा</p>";
               (graphResult.debugImages||[]).forEach((src,i)=>{
                 const card=document.createElement("div");card.style.cssText="min-width:0;padding:.4rem;border:1px solid var(--border-subtle);border-radius:8px";
-                const label=document.createElement("div");label.textContent="Full graph label area";label.style.cssText="font-size:.75rem;margin-bottom:.25rem";
-                const image=document.createElement("img");image.src=src;image.alt="Weekly graph OCR crop day "+(i+1);image.style.cssText="display:block;width:100%;height:112px;object-fit:contain;image-rendering:pixelated;background:#fff;border-radius:4px";
+                const label=document.createElement("div");label.textContent="Day "+(i+1);label.style.cssText="font-size:.75rem;margin-bottom:.25rem";
+                const image=document.createElement("img");image.src=src;image.alt="Weekly graph OCR crop day "+(i+1);image.style.cssText="display:block;width:100%;height:150px;object-fit:contain;image-rendering:pixelated;background:#fff;border-radius:4px";
                 card.append(label,image);debug.append(card);
               });
               status.textContent="Weekly Graph OCR पूर्ण. भरलेले Amount अंदाजे OCR candidates आहेत—प्रत्येक रक्कम मूळ Graph शी तपासा व गरज असल्यास edit करा. Weekly total import होणार नाही.";
