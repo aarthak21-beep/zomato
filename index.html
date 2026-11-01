@@ -4906,42 +4906,58 @@
       }
 
       async function readWeeklyGraphAmounts(file, worker, count, ocrText, fullWords) {
-        const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=[],debugImages=[];
-        // Tight regions around the seven tilted graph labels (not the bars or x-axis dates).
-        const slots=[[.150,.562],[.276,.518],[.397,.541],[.517,.591],[.632,.597],[.761,.587],[.876,.587]];
+        const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=Array(count).fill(""),votes=Array.from({length:count},()=>[]),debugImages=[];
+        // Read the complete tilted value-label band in one pass. The previous seven
+        // narrow fixed crops clipped the digits and sometimes captured the year/date.
+        const sx=Math.round(w*.055),sy=Math.round(h*.382),sw=Math.round(w*.89),sh=Math.round(h*.105);
+        const source=document.createElement("canvas");source.width=sw;source.height=sh;
+        const sourceCtx=source.getContext("2d");sourceCtx.drawImage(bitmap,sx,sy,sw,sh,0,0,sw,sh);
+        debugImages.push(source.toDataURL("image/png"));
         try {
-          for(let i=0;i<count;i++){
-            const [nx,ny]=slots[i]||[.15+i*.117,.56],cw=Math.round(w*.145),ch=Math.round(h*.052);
-            const sx=Math.max(0,Math.min(w-cw,Math.round(w*nx-cw/2))),sy=Math.max(0,Math.min(h-ch,Math.round(h*ny-ch/2)));
-            const src=document.createElement("canvas");src.width=cw;src.height=ch;
-            const sc=src.getContext("2d");sc.fillStyle="#fff";sc.fillRect(0,0,cw,ch);sc.drawImage(bitmap,sx,sy,cw,ch,0,0,cw,ch);
-            debugImages.push(src.toDataURL("image/png"));
-            const votes=[];
-            // Labels rise toward the right; +30deg in canvas coordinates deskews them.
-            for(const deg of [25,30,35]){
-              const rad=deg*Math.PI/180,z=8,rw=Math.ceil((cw*Math.abs(Math.cos(rad))+ch*Math.abs(Math.sin(rad)))*z),rh=Math.ceil((cw*Math.abs(Math.sin(rad))+ch*Math.abs(Math.cos(rad)))*z);
-              const c=document.createElement("canvas");c.width=rw;c.height=rh;
-              const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,rw,rh);x.translate(rw/2,rh/2);x.rotate(rad);x.scale(z,z);x.drawImage(src,-cw/2,-ch/2);
-              const im=x.getImageData(0,0,rw,rh);
-              for(const threshold of [125,165]){
-                const p=document.createElement("canvas");p.width=rw;p.height=rh;const pc=p.getContext("2d"),bin=pc.createImageData(rw,rh);
-                for(let k=0;k<im.data.length;k+=4){const q=im.data[k]*.299+im.data[k+1]*.587+im.data[k+2]*.114,v=q>threshold?255:0;bin.data[k]=bin.data[k+1]=bin.data[k+2]=v;bin.data[k+3]=255;}
-                pc.putImageData(bin,0,0);
-                for(const mode of ["7","13"]){
-                  await worker.setParameters({tessedit_pageseg_mode:mode,tessedit_char_whitelist:"0123456789"});
-                  const out=await worker.recognize(p),digits=String(out.data.text||"").replace(/[^0-9]/g,""),n=Number(digits),conf=Number(out.data.confidence)||0;
-                  if(digits.length>=1&&digits.length<=4&&((n>=0&&n<=9999)||(digits==="0")))votes.push({n,conf});
-                }
+          for(const deg of [25,30,35]){
+            const rad=deg*Math.PI/180,z=4;
+            const rw=Math.ceil((sw*Math.abs(Math.cos(rad))+sh*Math.abs(Math.sin(rad)))*z);
+            const rh=Math.ceil((sw*Math.abs(Math.sin(rad))+sh*Math.abs(Math.cos(rad)))*z);
+            const rotated=document.createElement("canvas");rotated.width=rw;rotated.height=rh;
+            const rc=rotated.getContext("2d");rc.fillStyle="#fff";rc.fillRect(0,0,rw,rh);
+            rc.translate(rw/2,rh/2);rc.rotate(rad);rc.scale(z,z);rc.drawImage(source,-sw/2,-sh/2);
+            const imageData=rc.getImageData(0,0,rw,rh);
+            for(const threshold of [135,170]){
+              const prep=document.createElement("canvas");prep.width=rw;prep.height=rh;
+              const pc=prep.getContext("2d"),bin=pc.createImageData(rw,rh);
+              for(let k=0;k<imageData.data.length;k+=4){
+                const lum=imageData.data[k]*.299+imageData.data[k+1]*.587+imageData.data[k+2]*.114;
+                const v=lum>threshold?255:0;bin.data[k]=bin.data[k+1]=bin.data[k+2]=v;bin.data[k+3]=255;
+              }
+              pc.putImageData(bin,0,0);
+              await worker.setParameters({tessedit_pageseg_mode:"11",tessedit_char_whitelist:"0123456789",preserve_interword_spaces:"1"});
+              const out=await worker.recognize(prep);
+              for(const word of (out.data.words||[])){
+                const digits=String(word.text||"").replace(/[^0-9]/g,"");
+                const conf=Number(word.confidence)||0,n=Number(digits);
+                if(!digits||digits.length>4||n>9999||conf<25)continue;
+                const bb=word.bbox||{},tx=((Number(bb.x0)+Number(bb.x1))/2-rw/2)/z,ty=((Number(bb.y0)+Number(bb.y1))/2-rh/2)/z;
+                // Inverse of the canvas rotation: locate this OCR word in the original screenshot.
+                const ox=sx+Math.cos(rad)*tx+Math.sin(rad)*ty;
+                const oy=sy-Math.sin(rad)*tx+Math.cos(rad)*ty;
+                const dayCenters=Array.from({length:count},(_,i)=>w*(.136+i*.123));
+                let nearest=0;for(let i=1;i<count;i++)if(Math.abs(ox-dayCenters[i])<Math.abs(ox-dayCenters[nearest]))nearest=i;
+                if(Math.abs(ox-dayCenters[nearest])>w*.065||oy< h*.385||oy>h*.475)continue;
+                votes[nearest].push({n,conf});
               }
             }
-            const counts=new Map();votes.forEach(v=>{const q=counts.get(v.n)||{n:v.n,hits:0,conf:0};q.hits++;q.conf=Math.max(q.conf,v.conf);counts.set(v.n,q);});
-            const ranked=[...counts.values()].sort((u,v)=>v.hits-u.hits||v.conf-u.conf);
-            const best=ranked[0],runner=ranked[1];
-            // Require repeat agreement; zero is a valid daily amount.
-            values.push(best&&best.hits>=2&&(!runner||best.hits>runner.hits)?best.n:"");
           }
-        } finally {await worker.setParameters({tessedit_char_whitelist:""});bitmap.close();}
-        // Do not guess from weekly total or nearby axis labels when graph OCR is uncertain.
+          for(let i=0;i<count;i++){
+            const grouped=new Map();
+            votes[i].forEach(v=>{const q=grouped.get(v.n)||{n:v.n,hits:0,confidence:0};q.hits++;q.confidence=Math.max(q.confidence,v.conf);grouped.set(v.n,q);});
+            const ranked=[...grouped.values()].sort((a,b)=>b.hits-a.hits||b.confidence-a.confidence);
+            const best=ranked[0],runner=ranked[1];
+            if(best&&best.hits>=2&&(!runner||best.hits>runner.hits))values[i]=best.n;
+          }
+        } finally {
+          await worker.setParameters({tessedit_char_whitelist:""});
+          bitmap.close();
+        }
         return {amounts:values,estimated:false,debugImages};
       }
 
