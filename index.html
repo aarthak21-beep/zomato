@@ -4995,10 +4995,10 @@
               });
               let debug=document.getElementById("screenshot-weekly-debug");
               if(!debug){debug=document.createElement("div");debug.id="screenshot-weekly-debug";debug.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-top:1rem";document.getElementById("screenshot-weekly-fields").append(debug);}
-              debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>OCR ने वाचलेले Crop तपासा</p>";
+              debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>OCR साठी वापरलेला पूर्ण Graph भाग तपासा</p>";
               (graphResult.debugImages||[]).forEach((src,i)=>{
                 const card=document.createElement("div");card.style.cssText="min-width:0;padding:.4rem;border:1px solid var(--border-subtle);border-radius:8px";
-                const label=document.createElement("div");label.textContent="Day "+(i+1);label.style.cssText="font-size:.75rem;margin-bottom:.25rem";
+                const label=document.createElement("div");label.textContent="Full graph label area";label.style.cssText="font-size:.75rem;margin-bottom:.25rem";
                 const image=document.createElement("img");image.src=src;image.alt="Weekly graph OCR crop day "+(i+1);image.style.cssText="display:block;width:100%;height:112px;object-fit:contain;image-rendering:pixelated;background:#fff;border-radius:4px";
                 card.append(label,image);debug.append(card);
               });
@@ -5044,7 +5044,7 @@
       function confirmZomatoScreenshotImport() {
         if(!pendingZomatoScreenshotImport)return;
         const rows=pendingZomatoScreenshotImport.type==="week"
-          ? [...document.querySelectorAll("#screenshot-weekly-rows input[data-week-date]")].map((d,i)=>({date:d.value,amount:Number(document.querySelector('#screenshot-weekly-rows input[data-week-amount="'+i+'"]').value)}))
+          ? [...document.querySelectorAll("#screenshot-weekly-rows input[data-week-date]")].map((d,i)=>{const raw=document.querySelector('#screenshot-weekly-rows input[data-week-amount="'+i+'"]').value.trim();return {date:d.value,amount:raw===""?NaN:Number(raw)};})
           : [{date:document.getElementById("screenshot-import-date").value,amount:Number(document.getElementById("screenshot-import-amount").value)}];
         if(!rows.length||rows.some(r=>!r.date||!Number.isFinite(r.amount)||r.amount<0)){showToast("सर्व तारखा आणि रक्कम योग्य भरा.","error");return;}
         const seen=new Set();for(const r of rows){if(seen.has(r.date)){showToast("Duplicate date row आहे.","error");return;}seen.add(r.date);const[y,m,d]=r.date.split("-").map(Number);if(y<2024||y>2030||m<1||m>12||d<1||d>getDaysInMonth(y,m-1)){showToast("Valid date निवडा.","error");return;}}
