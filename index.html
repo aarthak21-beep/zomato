@@ -4905,7 +4905,7 @@
         return rows;
       }
 
-      async function readWeeklyGraphAmounts(file, worker, count, ocrText) {
+      async function readWeeklyGraphAmounts(file, worker, count, ocrText, fullWords) {
         const bitmap=await createImageBitmap(file),w=bitmap.width,h=bitmap.height,values=[],debugImages=[];
         // Dedicated weekly-label OCR: multi-pass crops, deskew angles and contrast thresholds.
         const slots=[
@@ -4978,6 +4978,25 @@
           if(worker.setParameters) await worker.setParameters({tessedit_char_whitelist:""});
           bitmap.close();
         }
+        // Fallback: reuse numeric words recognized in the full-screen OCR, but only
+        // when their bounding boxes sit in the chart-label band and near that day's bar.
+        if(Array.isArray(fullWords)){
+          const centers=[.135,.257,.379,.500,.621,.743,.865];
+          for(let i=0;i<count;i++){
+            if(values[i]!==""&&values[i]!==undefined)continue;
+            const cx=centers[i]||(.135+i*.121);
+            const candidates=fullWords.map(word=>{
+              const box=word&&word.bbox||{};
+              const x=((Number(box.x0)||0)+(Number(box.x1)||0))/2;
+              const y=((Number(box.y0)||0)+(Number(box.y1)||0))/2;
+              const raw=String(word.text||"").replace(/,/g,"");
+              const digits=raw.replace(/[^0-9]/g,"");
+              return {x,y,digits,confidence:Number(word.confidence)||0};
+            }).filter(v=>v.digits.length>=1&&v.digits.length<=4&&v.x>=w*(cx-.075)&&v.x<=w*(cx+.075)&&v.y>=h*.47&&v.y<=h*.625)
+              .sort((a,b)=>Math.abs(a.x-w*cx)+Math.abs(a.y-h*.55)-Math.abs(b.x-w*cx)-Math.abs(b.y-h*.55));
+            if(candidates.length)values[i]=Number(candidates[0].digits);
+          }
+        }
         return {amounts:values,estimated:false,debugImages};
       }
 
@@ -4996,7 +5015,7 @@
               const weeklyWorker=await T.createWorker("eng");
               let graphResult;
               try {
-                graphResult=await readWeeklyGraphAmounts(file,weeklyWorker,weekly.length,result.data.text);
+                graphResult=await readWeeklyGraphAmounts(file,weeklyWorker,weekly.length,result.data.text,result.data.words);
               } finally {
                 await weeklyWorker.terminate();
               }
