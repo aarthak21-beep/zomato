@@ -2435,6 +2435,12 @@
       }
 
 </style>
+  
+    <meta name="theme-color" content="#e23744" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/pwa-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/pwa-icon.svg" />
+
   </head>
   <body>
     <!-- ==================== AUTH / LOGIN SCREEN ==================== -->
@@ -5049,5 +5055,16 @@
         syncWithServer(false);
       });
     </script>
+  
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function (error) {
+            console.error("PWA service worker registration failed:", error);
+          });
+        });
+      }
+    </script>
+
   </body>
 </html>
