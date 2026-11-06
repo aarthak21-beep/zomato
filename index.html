@@ -3482,6 +3482,20 @@
       function showLoginScreen() {
         document.getElementById("auth-screen").style.display = "flex";
         document.getElementById("app-container").style.display = "none";
+        const isPinSetup = !AppState.auth.recoveryPin;
+        const pinInput = document.getElementById("login-pin");
+        const pinConfirmInput = document.getElementById("login-pin-confirm");
+        const pinConfirmGroup = document.getElementById("login-pin-confirm-group");
+        const pinHelp = document.getElementById("login-pin-help");
+        const loginSubmit = document.getElementById("login-submit-btn");
+        pinInput.value = "";
+        pinConfirmInput.value = "";
+        pinConfirmGroup.style.display = isPinSetup ? "block" : "none";
+        pinConfirmInput.required = isPinSetup;
+        pinHelp.textContent = isPinSetup
+          ? "पहिल्यांदा वापरत आहात. नवीन ४–८ अंकी PIN तयार करा."
+          : "तुमचा ४–८ अंकी PIN टाकून लॉगिन करा.";
+        loginSubmit.textContent = isPinSetup ? "PIN सेट करा आणि पुढे जा" : "PIN ने लॉगिन करा";
       }
 
       function showDashboard() {
@@ -3497,21 +3511,12 @@
         const loginForm = document.getElementById("login-form");
         const pinInput = document.getElementById("login-pin");
         const pinConfirmInput = document.getElementById("login-pin-confirm");
-        const pinConfirmGroup = document.getElementById("login-pin-confirm-group");
-        const pinHelp = document.getElementById("login-pin-help");
-        const loginSubmit = document.getElementById("login-submit-btn");
-        const isPinSetup = !AppState.auth.recoveryPin;
-        pinConfirmGroup.style.display = isPinSetup ? "block" : "none";
-        pinConfirmInput.required = isPinSetup;
-        pinHelp.textContent = isPinSetup
-          ? "पहिल्यांदा वापरत आहात. नवीन ४–८ अंकी PIN तयार करा."
-          : "तुमचा ४–८ अंकी PIN टाकून लॉगिन करा.";
-        loginSubmit.textContent = isPinSetup ? "PIN सेट करा आणि पुढे जा" : "PIN ने लॉगिन करा";
 
         loginForm.addEventListener("submit", (e) => {
           e.preventDefault();
           const pin = pinInput.value.trim();
-          if (!/^\d{4,8}$/.test(pin)) {
+          const isPinSetup = !AppState.auth.recoveryPin;
+          if (!/^\\d{4,8}$/.test(pin)) {
             showToast("PIN ४ ते ८ अंकांचा असावा", "error");
             return;
           }
