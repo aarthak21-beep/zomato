@@ -2448,22 +2448,16 @@
 
         <form id="login-form">
           <div class="auth-input-group">
-            <label for="login-username">Username</label>
-            <input type="text" id="login-username" required autocomplete="username" placeholder="Enter username" />
+            <label for="login-pin">4–8 अंकी PIN</label>
+            <input type="password" id="login-pin" required inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="PIN टाका" />
           </div>
-          <div class="auth-input-group">
-            <label for="login-password">Password</label>
-            <div class="password-input-wrap">
-              <input type="password" id="login-password" required autocomplete="current-password" placeholder="Enter password" />
-              <button type="button" id="toggle-login-password" class="password-eye-btn" aria-label="Show password" aria-pressed="false">👁</button>
-            </div>
+          <div class="auth-input-group" id="login-pin-confirm-group" style="display:none;">
+            <label for="login-pin-confirm">PIN पुन्हा टाका</label>
+            <input type="password" id="login-pin-confirm" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="PIN निश्चित करा" />
           </div>
-
-          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
-            Sign In to Dashboard
-          </button>
+          <p class="auth-hint" id="login-pin-help">तुमचा PIN टाकून लॉगिन करा.</p>
+          <button type="submit" class="btn btn-primary" id="login-submit-btn" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">PIN ने लॉगिन करा</button>
         </form>
-        <button type="button" id="forgot-password-btn" class="btn btn-secondary btn-sm" style="width:100%; margin-top:.8rem;" onclick="var m=document.getElementById('modal-forgot-password'); if(m){m.classList.add('open');m.style.setProperty('display','flex','important');m.style.setProperty('z-index','99999');}">Forgot Password?</button>
 
         <div class="auth-powered-by">Powered by <strong>Moti Technologies</strong></div>
       </div>
@@ -2931,25 +2925,11 @@
           <!-- Tab 5: Account & Login Credentials -->
           <div class="form-section" id="tab-account">
             <div class="report-card">
-              <h4>Change Local Login Credentials</h4>
-              <div class="form-group">
-                <label for="cfg-username">Username</label>
-                <input type="text" id="cfg-username" />
-              </div>
-              <div class="form-group">
-                <label for="cfg-new-password">New Password</label>
-                <input type="password" id="cfg-new-password" placeholder="Leave blank to keep current password" />
-              </div>
-              <div class="form-group">
-                <label for="cfg-confirm-password">Confirm New Password</label>
-                <input type="password" id="cfg-confirm-password" placeholder="Confirm new password" />
-              </div>
-              <hr style="border:0; border-top:1px solid var(--border-subtle); margin:1.2rem 0;" />
-              <h4 style="margin-bottom:.4rem;">Password Recovery PIN</h4>
-              <p class="form-help" style="margin-bottom:.8rem;">Set a 4–8 digit PIN now. If you forget your password, use this PIN on this device to reset it. Set the same PIN separately on your other devices.</p>
-              <div class="form-group"><label for="cfg-recovery-pin">Recovery PIN</label><input type="password" id="cfg-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Choose 4–8 digit PIN" autocomplete="new-password" /></div>
-              <div class="form-group"><label for="cfg-confirm-recovery-pin">Confirm Recovery PIN</label><input type="password" id="cfg-confirm-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Confirm recovery PIN" autocomplete="new-password" /></div>
-              <button id="save-account-btn" class="btn btn-primary">Update Credentials &amp; Recovery PIN</button>
+              <h4>लॉगिन PIN बदला</h4>
+              <p class="form-help" style="margin-bottom:.8rem;">४ ते ८ अंकी PIN सेट करा. प्रत्येक डिव्हाइसवर PIN स्वतंत्रपणे सेट करावा लागेल.</p>
+              <div class="form-group"><label for="cfg-recovery-pin">नवीन PIN</label><input type="password" id="cfg-recovery-pin" inputmode="numeric" maxlength="8" placeholder="नवीन ४–८ अंकी PIN" autocomplete="new-password" /></div>
+              <div class="form-group"><label for="cfg-confirm-recovery-pin">PIN पुन्हा टाका</label><input type="password" id="cfg-confirm-recovery-pin" inputmode="numeric" maxlength="8" placeholder="PIN निश्चित करा" autocomplete="new-password" /></div>
+              <button id="save-account-btn" class="btn btn-primary">PIN अपडेट करा</button>
             </div>
           </div>
 
@@ -3108,21 +3088,6 @@
           <button class="btn btn-secondary" data-close="modal-confirm">Cancel</button>
           <button id="confirm-modal-action-btn" class="btn btn-danger">Confirm</button>
         </div>
-      </div>
-    </div>
-
-    <!-- Forgot Password Recovery Modal -->
-    <div class="modal-backdrop" id="modal-forgot-password">
-      <div class="modal-box" style="max-width:440px;">
-        <div class="modal-header"><div class="modal-title">Reset Password</div><button class="modal-close" data-close="modal-forgot-password">&times;</button></div>
-        <div class="modal-body">
-          <p class="form-help" style="margin-bottom:1rem;">Enter your username and the Recovery PIN you previously saved in Settings on this device.</p>
-          <div class="form-group"><label for="reset-username">Username</label><input type="text" id="reset-username" autocomplete="username" placeholder="Enter username" /></div>
-          <div class="form-group"><label for="reset-recovery-pin">Recovery PIN</label><input type="password" id="reset-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Enter 4–8 digit PIN" /></div>
-          <div class="form-group"><label for="reset-new-password">New Password</label><input type="password" id="reset-new-password" autocomplete="new-password" placeholder="At least 6 characters" /></div>
-          <div class="form-group"><label for="reset-confirm-password">Confirm New Password</label><input type="password" id="reset-confirm-password" autocomplete="new-password" placeholder="Re-enter new password" /></div>
-        </div>
-        <div class="modal-footer"><button class="btn btn-secondary" data-close="modal-forgot-password">Cancel</button><button id="reset-password-submit" class="btn btn-primary" type="button" onclick="resetPasswordNow()">Reset Password</button></div>
       </div>
     </div>
 
@@ -3526,76 +3491,44 @@
         renderAll();
       }
 
-      function resetPasswordNow() {
-        try {
-          const user = document.getElementById("reset-username").value.trim();
-          const pin = document.getElementById("reset-recovery-pin").value.trim();
-          const newPass = document.getElementById("reset-new-password").value;
-          const confirmPass = document.getElementById("reset-confirm-password").value;
-          if (!AppState.auth.recoveryPin) {
-            showToast("No Recovery PIN is set on this device. Use a device where you are logged in to set one first.", "error");
-            return;
-          }
-          if (user !== AppState.auth.username || pin !== AppState.auth.recoveryPin) {
-            showToast("Username or Recovery PIN is incorrect", "error");
-            return;
-          }
-          if (newPass.length < 6) {
-            showToast("New password must be at least 6 characters", "error");
-            return;
-          }
-          if (newPass !== confirmPass) {
-            showToast("New passwords do not match", "error");
-            return;
-          }
-          AppState.auth.passwordHash = newPass;
-          AppState.auth.isLoggedIn = false;
-          savePersistedSettings();
-          document.getElementById("modal-forgot-password").classList.remove("open");
-          document.getElementById("login-password").value = "";
-          showToast("Password reset successfully. Please sign in with your new password.");
-        } catch (error) {
-          console.error("Password reset failed:", error);
-          alert("Password reset could not complete. Please refresh the page and try again.");
-        }
-      }
-
       // --- EVENT HANDLERS SETUP ---
       function setupEventListeners() {
-        // Auth Form
+        // PIN-only authentication
         const loginForm = document.getElementById("login-form");
-        const loginPassword = document.getElementById("login-password");
-        const passwordEye = document.getElementById("toggle-login-password");
-        passwordEye.addEventListener("click", () => {
-          const show = loginPassword.type === "password";
-          loginPassword.type = show ? "text" : "password";
-          passwordEye.textContent = show ? "🙈" : "👁";
-          passwordEye.setAttribute("aria-label", show ? "Hide password" : "Show password");
-          passwordEye.setAttribute("aria-pressed", String(show));
-        });
-        document.getElementById("forgot-password-btn").addEventListener("click", () => {
-          ["reset-username", "reset-recovery-pin", "reset-new-password", "reset-confirm-password"].forEach((id) => {
-            document.getElementById(id).value = "";
-          });
-          document.getElementById("modal-forgot-password").classList.add("open");
-        });
-
-        // Password reset is handled directly by the button's inline onclick
-        // so it still works if the main event-listener setup is interrupted.
+        const pinInput = document.getElementById("login-pin");
+        const pinConfirmInput = document.getElementById("login-pin-confirm");
+        const pinConfirmGroup = document.getElementById("login-pin-confirm-group");
+        const pinHelp = document.getElementById("login-pin-help");
+        const loginSubmit = document.getElementById("login-submit-btn");
+        const isPinSetup = !AppState.auth.recoveryPin;
+        pinConfirmGroup.style.display = isPinSetup ? "block" : "none";
+        pinConfirmInput.required = isPinSetup;
+        pinHelp.textContent = isPinSetup
+          ? "पहिल्यांदा वापरत आहात. नवीन ४–८ अंकी PIN तयार करा."
+          : "तुमचा ४–८ अंकी PIN टाकून लॉगिन करा.";
+        loginSubmit.textContent = isPinSetup ? "PIN सेट करा आणि पुढे जा" : "PIN ने लॉगिन करा";
 
         loginForm.addEventListener("submit", (e) => {
           e.preventDefault();
-          const user = document.getElementById("login-username").value.trim();
-          const pass = document.getElementById("login-password").value;
-
-          if (user === AppState.auth.username && pass === AppState.auth.passwordHash) {
-            AppState.auth.isLoggedIn = true;
-            savePersistedSettings();
-            showToast("Logged in successfully!");
-            showDashboard();
-          } else {
-            showToast("Invalid username or password", "error");
+          const pin = pinInput.value.trim();
+          if (!/^\d{4,8}$/.test(pin)) {
+            showToast("PIN ४ ते ८ अंकांचा असावा", "error");
+            return;
           }
+          if (isPinSetup) {
+            if (pin !== pinConfirmInput.value.trim()) {
+              showToast("दोन्ही PIN जुळत नाहीत", "error");
+              return;
+            }
+            AppState.auth.recoveryPin = pin;
+          } else if (pin !== AppState.auth.recoveryPin) {
+            showToast("चुकीचा PIN", "error");
+            return;
+          }
+          AppState.auth.isLoggedIn = true;
+          savePersistedSettings();
+          showToast(isPinSetup ? "PIN सेट झाला!" : "लॉगिन यशस्वी!");
+          showDashboard();
         });
 
         document.getElementById("logout-btn").addEventListener("click", () => {
@@ -3812,42 +3745,22 @@
         });
 
         document.getElementById("save-account-btn").addEventListener("click", () => {
-          const user = document.getElementById("cfg-username").value.trim();
-          const pass = document.getElementById("cfg-new-password").value;
-          const confirmPass = document.getElementById("cfg-confirm-password").value;
-
-          if (!user) {
-            showToast("Username cannot be empty", "error");
+          const pin = document.getElementById("cfg-recovery-pin").value.trim();
+          const confirmPin = document.getElementById("cfg-confirm-recovery-pin").value.trim();
+          if (!/^\d{4,8}$/.test(pin)) {
+            showToast("PIN ४ ते ८ अंकांचा असावा", "error");
             return;
           }
-
-          if (pass) {
-            if (pass !== confirmPass) {
-              showToast("New passwords do not match", "error");
-              return;
-            }
-            AppState.auth.passwordHash = pass;
+          if (pin !== confirmPin) {
+            showToast("दोन्ही PIN जुळत नाहीत", "error");
+            return;
           }
-
-          const recoveryPin = document.getElementById("cfg-recovery-pin").value.trim();
-          const confirmRecoveryPin = document.getElementById("cfg-confirm-recovery-pin").value.trim();
-          if (pass) {
-            if (pass.length < 6) { showToast("Password must be at least 6 characters", "error"); return; }
-            if (pass !== confirmPass) { showToast("New passwords do not match", "error"); return; }
-            AppState.auth.passwordHash = pass;
-          }
-          if (recoveryPin || confirmRecoveryPin) {
-            if (!/^\d{4,8}$/.test(recoveryPin)) { showToast("Recovery PIN must be 4–8 digits", "error"); return; }
-            if (recoveryPin !== confirmRecoveryPin) { showToast("Recovery PINs do not match", "error"); return; }
-            AppState.auth.recoveryPin = recoveryPin;
-          }
-          AppState.auth.username = user;
+          AppState.auth.recoveryPin = pin;
+          AppState.auth.isLoggedIn = true;
           savePersistedSettings();
-          document.getElementById("cfg-new-password").value = "";
-          document.getElementById("cfg-confirm-password").value = "";
           document.getElementById("cfg-recovery-pin").value = "";
           document.getElementById("cfg-confirm-recovery-pin").value = "";
-          showToast("Account credentials and recovery settings updated!");
+          showToast("लॉगिन PIN अपडेट झाला!");
         });
 
         // Google Sheets connection settings
@@ -3994,7 +3907,7 @@
         document.getElementById("cfg-currency-symbol").value = AppState.settings.currency || "₹";
         document.getElementById("cfg-rounding-mode").value = AppState.settings.rounding || "round";
         document.getElementById("cfg-formula-total").value = AppState.settings.formulaTotal || "zomato_only";
-        document.getElementById("cfg-username").value = AppState.auth.username;
+        // Username/password fields were removed; authentication is PIN-only.
         document.getElementById("cfg-recovery-pin").value = "";
         document.getElementById("cfg-confirm-recovery-pin").value = "";
         const cloudConfig = getGoogleSyncConfig();
