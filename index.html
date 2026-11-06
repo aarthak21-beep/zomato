@@ -2463,7 +2463,7 @@
             Sign In to Dashboard
           </button>
         </form>
-        <button type="button" id="forgot-password-btn" class="btn btn-secondary btn-sm" style="width:100%; margin-top:.8rem;" onclick="document.getElementById('modal-forgot-password')?.classList.add('open');">Forgot Password?</button>
+        <button type="button" id="forgot-password-btn" class="btn btn-secondary btn-sm" style="width:100%; margin-top:.8rem;" onclick="var m=document.getElementById('modal-forgot-password'); if(m){m.classList.add('open');m.style.setProperty('display','flex','important');m.style.setProperty('z-index','99999');}">Forgot Password?</button>
 
         <div class="auth-powered-by">Powered by <strong>Moti Technologies</strong></div>
       </div>
