@@ -3516,7 +3516,7 @@
           e.preventDefault();
           const pin = pinInput.value.trim();
           const isPinSetup = !AppState.auth.recoveryPin;
-          if (!/^\\d{4,8}$/.test(pin)) {
+          if (!/^\d{4,8}$/.test(pin)) {
             showToast("PIN ४ ते ८ अंकांचा असावा", "error");
             return;
           }
