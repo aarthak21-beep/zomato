@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "Moti Partner Earning Tracker",
+  "short_name": "Moti Partner",
+  "description": "Track delivery earnings, monthly targets, shifts and performance.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0b0e",
+  "theme_color": "#e23744",
+  "icons": [
+    { "src": "/pwa-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
