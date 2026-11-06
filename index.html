@@ -2454,15 +2454,15 @@
 
         <form id="login-form">
           <div class="auth-input-group">
-            <label for="login-pin">4–8 अंकी PIN</label>
-            <input type="password" id="login-pin" required inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="PIN टाका" />
+            <label for="login-pin">4–8 digit PIN</label>
+            <input type="password" id="login-pin" required inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="Enter PIN" />
           </div>
           <div class="auth-input-group" id="login-pin-confirm-group" style="display:none;">
-            <label for="login-pin-confirm">PIN पुन्हा टाका</label>
-            <input type="password" id="login-pin-confirm" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="PIN निश्चित करा" />
+            <label for="login-pin-confirm">Re-enter PIN</label>
+            <input type="password" id="login-pin-confirm" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="Confirm PIN" />
           </div>
-          <p class="auth-hint" id="login-pin-help">तुमचा PIN टाकून लॉगिन करा.</p>
-          <button type="submit" class="btn btn-primary" id="login-submit-btn" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">PIN ने लॉगिन करा</button>
+          <p class="auth-hint" id="login-pin-help">Enter your PIN to log in.</p>
+          <button type="submit" class="btn btn-primary" id="login-submit-btn" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">Log in with PIN</button>
         </form>
 
         <div class="auth-powered-by">Powered by <strong>Moti Technologies</strong></div>
@@ -2931,11 +2931,11 @@
           <!-- Tab 5: Account & Login Credentials -->
           <div class="form-section" id="tab-account">
             <div class="report-card">
-              <h4>लॉगिन PIN बदला</h4>
-              <p class="form-help" style="margin-bottom:.8rem;">४ ते ८ अंकी PIN सेट करा. प्रत्येक डिव्हाइसवर PIN स्वतंत्रपणे सेट करावा लागेल.</p>
-              <div class="form-group"><label for="cfg-recovery-pin">नवीन PIN</label><input type="password" id="cfg-recovery-pin" inputmode="numeric" maxlength="8" placeholder="नवीन ४–८ अंकी PIN" autocomplete="new-password" /></div>
-              <div class="form-group"><label for="cfg-confirm-recovery-pin">PIN पुन्हा टाका</label><input type="password" id="cfg-confirm-recovery-pin" inputmode="numeric" maxlength="8" placeholder="PIN निश्चित करा" autocomplete="new-password" /></div>
-              <button id="save-account-btn" class="btn btn-primary">PIN अपडेट करा</button>
+              <h4>Change Login PIN</h4>
+              <p class="form-help" style="margin-bottom:.8rem;">Set a 4–8 digit PIN. You must set your PIN separately on each device.</p>
+              <div class="form-group"><label for="cfg-recovery-pin">New PIN</label><input type="password" id="cfg-recovery-pin" inputmode="numeric" maxlength="8" placeholder="New 4–8 digit PIN" autocomplete="new-password" /></div>
+              <div class="form-group"><label for="cfg-confirm-recovery-pin">Re-enter PIN</label><input type="password" id="cfg-confirm-recovery-pin" inputmode="numeric" maxlength="8" placeholder="Confirm PIN" autocomplete="new-password" /></div>
+              <button id="save-account-btn" class="btn btn-primary">Update PIN</button>
             </div>
           </div>
 
@@ -2943,21 +2943,21 @@
           <div class="form-section" id="tab-backup">
             <div class="report-card" id="screenshot-import-card" style="border-color: rgba(214,181,109,.42); background: linear-gradient(145deg, rgba(19,35,52,.92), rgba(35,24,37,.72));">
               <h4 style="color:#e8cb83;">📸 Partner App Screenshot Import</h4>
-              <p class="form-help" style="margin-bottom:1rem;">कोणत्याही delivery partner app मधील <strong>Day किंवा Week</strong> Earnings screenshot निवडा. Week मध्ये Graph मधील प्रत्येक तारखेची daily total रक्कम import होईल; वरचा weekly total फक्त reference असेल.</p>
+              <p class="form-help" style="margin-bottom:1rem;">Select a <strong>Day or Week</strong> earnings screenshot from any delivery partner app. For Week screenshots, the daily total for each date on the graph will be imported; the weekly total at the top is for reference only.</p>
               <div class="form-group">
                 <label for="zomato-earning-screenshot">Select Day / Week Earnings Screenshot</label>
                 <input type="file" id="zomato-earning-screenshot" accept="image/*" style="width:100%;padding:.7rem;border:1px solid var(--border-subtle);border-radius:10px;background:var(--bg-input);" />
               </div>
-              <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. फक्त Day tab चा screenshot वापरा. Total earning मध्ये incentive समाविष्ट असते.</div>
+              <div id="screenshot-ocr-status" class="form-help" aria-live="polite">Ready. Use a screenshot from the Day tab only. Total earnings include incentives.</div>
               <div id="screenshot-import-preview" style="display:none;margin-top:1rem;padding:1rem;border:1px solid rgba(214,181,109,.28);border-radius:12px;background:rgba(5,12,20,.38);">
-                <div id="screenshot-daily-fields"><div class="form-group"><label for="screenshot-import-date">Date (year तपासून घ्या)</label><input type="date" id="screenshot-import-date" /></div><div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div></div><div id="screenshot-weekly-fields" style="display:none;"><p class="form-help">Weekly total import होणार नाही. खाली 7 daily amounts भरा. एकाच वेळी 7 amounts paste करू शकता (उदा. 916, 2321, 1727, 205, 0, 342, 37).</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0"><input id="screenshot-weekly-paste" type="text" placeholder="7 amounts comma separated" style="flex:1;min-width:220px"><button type="button" id="screenshot-weekly-fill" class="btn btn-secondary btn-sm">Fill 7 days</button></div><div id="screenshot-weekly-rows"></div></div>
+                <div id="screenshot-daily-fields"><div class="form-group"><label for="screenshot-import-date">Date (check the year)</label><input type="date" id="screenshot-import-date" /></div><div class="form-group"><label for="screenshot-import-amount">Total earning (₹)</label><input type="number" id="screenshot-import-amount" min="0" step="0.01" /></div></div><div id="screenshot-weekly-fields" style="display:none;"><p class="form-help">The weekly total will not be imported. Enter the 7 daily amounts below. You can paste all 7 amounts at once (e.g. 916, 2321, 1727, 205, 0, 342, 37).</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0"><input id="screenshot-weekly-paste" type="text" placeholder="7 amounts comma separated" style="flex:1;min-width:220px"><button type="button" id="screenshot-weekly-fill" class="btn btn-secondary btn-sm">Fill 7 days</button></div><div id="screenshot-weekly-rows"></div></div>
                 <p id="screenshot-import-duplicate" class="form-help" style="margin:.5rem 0 1rem;"></p>
                 <div style="display:flex;gap:.65rem;flex-wrap:wrap;">
                   <button type="button" id="screenshot-import-confirm" class="btn btn-primary btn-sm">✓ Confirm Import</button>
                   <button type="button" id="screenshot-import-cancel" class="btn btn-secondary btn-sm">Cancel</button>
                 </div>
               </div>
-              <p class="form-help" style="margin-top:1rem;">Duplicate protection: same date + same amount पुन्हा आल्यास Skip. त्या तारखेला वेगळी रक्कम आधीपासून असल्यास overwrite करण्याआधी confirmation घेतले जाईल. फक्त Total earning वापरली जाते (incentive सहित). OCR browser मध्येच चालते; screenshot server वर upload होत नाही. OCR साठी internet लागेल.</p>
+              <p class="form-help" style="margin-top:1rem;">Duplicate protection: repeated entries with the same date and amount are skipped. If a different amount already exists for that date, you will be asked to confirm before it is overwritten. Only Total Earnings (including incentives) are used. OCR runs in your browser; screenshots are not uploaded to the server. Internet access is required for OCR.</p>
             </div>
 
             <div class="report-card" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.04);">
@@ -3499,9 +3499,9 @@
         pinConfirmGroup.style.display = isPinSetup ? "block" : "none";
         pinConfirmInput.required = isPinSetup;
         pinHelp.textContent = isPinSetup
-          ? "पहिल्यांदा वापरत आहात. नवीन ४–८ अंकी PIN तयार करा."
-          : "तुमचा ४–८ अंकी PIN टाकून लॉगिन करा.";
-        loginSubmit.textContent = isPinSetup ? "PIN सेट करा आणि पुढे जा" : "PIN ने लॉगिन करा";
+          ? "First time here? Create a new 4–8 digit PIN."
+          : "Enter your 4–8 digit PIN to log in.";
+        loginSubmit.textContent = isPinSetup ? "Set PIN & Continue" : "Log in with PIN";
       }
 
       function showDashboard() {
@@ -3523,22 +3523,22 @@
           const pin = pinInput.value.trim();
           const isPinSetup = !AppState.auth.recoveryPin;
           if (!/^\d{4,8}$/.test(pin)) {
-            showToast("PIN ४ ते ८ अंकांचा असावा", "error");
+            showToast("PIN must be 4 to 8 digits.", "error");
             return;
           }
           if (isPinSetup) {
             if (pin !== pinConfirmInput.value.trim()) {
-              showToast("दोन्ही PIN जुळत नाहीत", "error");
+              showToast("The PINs do not match.", "error");
               return;
             }
             AppState.auth.recoveryPin = pin;
           } else if (pin !== AppState.auth.recoveryPin) {
-            showToast("चुकीचा PIN", "error");
+            showToast("Incorrect PIN.", "error");
             return;
           }
           AppState.auth.isLoggedIn = true;
           savePersistedSettings();
-          showToast(isPinSetup ? "PIN सेट झाला!" : "लॉगिन यशस्वी!");
+          showToast(isPinSetup ? "PIN set successfully!" : "Login successful!");
           showDashboard();
         });
 
@@ -3759,11 +3759,11 @@
           const pin = document.getElementById("cfg-recovery-pin").value.trim();
           const confirmPin = document.getElementById("cfg-confirm-recovery-pin").value.trim();
           if (!/^\d{4,8}$/.test(pin)) {
-            showToast("PIN ४ ते ८ अंकांचा असावा", "error");
+            showToast("PIN must be 4 to 8 digits.", "error");
             return;
           }
           if (pin !== confirmPin) {
-            showToast("दोन्ही PIN जुळत नाहीत", "error");
+            showToast("The PINs do not match.", "error");
             return;
           }
           AppState.auth.recoveryPin = pin;
@@ -3771,7 +3771,7 @@
           savePersistedSettings();
           document.getElementById("cfg-recovery-pin").value = "";
           document.getElementById("cfg-confirm-recovery-pin").value = "";
-          showToast("लॉगिन PIN अपडेट झाला!");
+          showToast("Login PIN updated!");
         });
 
         // Google Sheets connection settings
@@ -3793,9 +3793,9 @@
         document.getElementById("screenshot-weekly-fill").addEventListener("click",()=>{
           const raw=document.getElementById("screenshot-weekly-paste").value.trim();
           const nums=raw.split(/[ ,;\n\t]+/).filter(Boolean);
-          if(nums.length!==7||nums.some(v=>!/^\d+(?:\.\d{1,2})?$/.test(v))){showToast("7 amounts comma separated टाका.","error");return;}
+          if(nums.length!==7||nums.some(v=>!/^\d+(?:\.\d{1,2})?$/.test(v))){showToast("Enter 7 amounts separated by commas.","error");return;}
           nums.forEach((v,i)=>{const input=document.querySelector('#screenshot-weekly-rows input[data-week-amount="'+i+'"]');if(input)input.value=v;});
-          showToast("7 daily amounts भरले.");
+          showToast("7 daily amounts entered.");
         });
 
         document.getElementById("screenshot-import-cancel").addEventListener("click", resetZomatoScreenshotImport);
@@ -4822,7 +4822,7 @@
         const months=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
         let date="";
         if(m){const mi=months.indexOf(m[2].slice(0,3).toLowerCase());if(mi>=0)date=String(new Date().getFullYear())+"-"+String(mi+1).padStart(2,"0")+"-"+String(Number(m[1])).padStart(2,"0");}
-        const am=[...normalized.matchAll(/[₹रRs.]*\s*([0-9]{1,7}\.[0-9]{1,2})/gi)];
+        const am=[...normalized.matchAll(/[₹Rs.]*\s*([0-9]{1,7}\.[0-9]{1,2})/gi)];
         return {date,amount:am.length?Number(am[0][1]):NaN,dateFound:!!date,amountFound:!!am.length};
       }
       function parseZomatoWeeklyScreenshot(text,words,height,width) {
@@ -4909,7 +4909,7 @@
           try{
             const result=await worker.recognize(file),weekly=parseZomatoWeeklyScreenshot(result.data.text,result.data.words,result.data.imageSize?.h,result.data.imageSize?.w);
             if(weekly){
-              status.textContent="Week dates वाचल्या. आता 7 daily amounts भरा किंवा एकत्र paste करा.";
+              status.textContent="Week dates detected. Now enter the 7 daily amounts or paste them together.";
               // Skip unreliable graph OCR; show the seven date/amount fields immediately.
               // This avoids long waits and prevents guessed amounts from being imported.
               const graphResult={amounts:weekly.map(()=>""),debugImages:[]};
@@ -4921,55 +4921,55 @@
               weekly.forEach((r,i)=>{
                 const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.5rem 0";
                 const d=document.createElement("input");d.type="date";d.value=r.date;d.dataset.weekDate=i;
-                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.placeholder="Graph amount तपासा";a.value=r.amount;a.dataset.weekAmount=i;
+                const a=document.createElement("input");a.type="number";a.min="0";a.step=".01";a.placeholder="Check graph amount";a.value=r.amount;a.dataset.weekAmount=i;
                 const dl=document.createElement("label");dl.textContent="Date";const al=document.createElement("label");al.textContent="Daily total (₹)";
                 const l=document.createElement("div"),rr=document.createElement("div");l.append(dl,d);rr.append(al,a);row.append(l,rr);host.append(row);
               });
               let debug=document.getElementById("screenshot-weekly-debug");
               if(!debug){debug=document.createElement("div");debug.id="screenshot-weekly-debug";debug.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-top:1rem";document.getElementById("screenshot-weekly-fields").append(debug);}
-              debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>प्रत्येक दिवसाचा मोठा Amount Crop तपासा</p>";
+              debug.innerHTML="<p style='grid-column:1/-1;margin:.25rem 0;font-weight:600'>Check the large amount crop for each day</p>";
               (graphResult.debugImages||[]).forEach((src,i)=>{
                 const card=document.createElement("div");card.style.cssText="min-width:0;padding:.4rem;border:1px solid var(--border-subtle);border-radius:8px";
                 const label=document.createElement("div");label.textContent="Day "+(i+1);label.style.cssText="font-size:.75rem;margin-bottom:.25rem";
                 const image=document.createElement("img");image.src=src;image.alt="Weekly graph OCR crop day "+(i+1);image.style.cssText="display:block;width:100%;height:150px;object-fit:contain;image-rendering:pixelated;background:#fff;border-radius:4px";
                 card.append(label,image);debug.append(card);
               });
-              status.textContent="Weekly Graph OCR पूर्ण. भरलेले Amount अंदाजे OCR candidates आहेत—प्रत्येक रक्कम मूळ Graph शी तपासा व गरज असल्यास edit करा. Weekly total import होणार नाही.";
+              status.textContent="Weekly graph OCR complete. The entered amounts are estimated OCR candidates. Compare each amount with the original graph and edit if needed. The weekly total will not be imported.";
             }else{
               document.getElementById("screenshot-daily-fields").style.display="block";document.getElementById("screenshot-weekly-fields").style.display="none";
               const daily=parseZomatoDailyScreenshotText(result.data.text);
               document.getElementById("screenshot-import-date").value=daily.date||"";
               document.getElementById("screenshot-import-amount").value=daily.amountFound?daily.amount.toFixed(2):"";
               pendingZomatoScreenshotImport={type:"day"};
-              status.textContent=daily.dateFound&&daily.amountFound?"Daily OCR complete. Total earning तपासा.":"Date/amount स्वतः भरा.";
+              status.textContent=daily.dateFound&&daily.amountFound?"Daily OCR complete. Verify total earnings.":"Enter the date and amount manually.";
               updateZomatoScreenshotDuplicateHint();
             }
             preview.style.display="block";btn.disabled=false;
           }finally{await worker.terminate();}
-        }catch(e){console.error(e);status.textContent=e.message||"Screenshot वाचता आला नाही.";btn.disabled=false;}
+        }catch(e){console.error(e);status.textContent=e.message||"Unable to read the screenshot.";btn.disabled=false;}
       }
 
       function updateZomatoScreenshotDuplicateHint() {
         const dateValue = document.getElementById("screenshot-import-date").value;
         const amount = Number(document.getElementById("screenshot-import-amount").value);
         const hint = document.getElementById("screenshot-import-duplicate");
-        if (!dateValue || !Number.isFinite(amount)) { hint.textContent = "तारीख आणि रक्कम तपासा."; return; }
+        if (!dateValue || !Number.isFinite(amount)) { hint.textContent = "Check the date and amount."; return; }
         const [year, month, day] = dateValue.split("-").map(Number);
         const monthData = JSON.parse(localStorage.getItem(getMonthStorageKey(year, month - 1)) || '{"days":{}}');
         const existing = Number(monthData?.days?.[day]?.zomato || 0);
         if (existing === amount && existing > 0) {
-          hint.textContent = "✓ हीच रक्कम या तारखेला आधीच आहे. Confirm केल्यास duplicate न बनवता Skip होईल.";
+          hint.textContent = "✓ This amount already exists for this date. Confirm to skip it without creating a duplicate.";
         } else if (existing > 0) {
-          hint.textContent = `⚠ या तारखेला आधी ₹${existing.toFixed(2)} नोंद आहे. Confirm केल्यावर overwrite करण्याआधी विचारले जाईल.`;
+          hint.textContent = `⚠ An entry of ₹${existing.toFixed(2)} already exists for this date. You will be asked before it is overwritten.`;
         } else {
-          hint.textContent = "या तारखेला ZOMATO earning entry नाही. Confirm केल्यावर नवीन entry बनेल.";
+          hint.textContent = "There is no ZOMATO earnings entry for this date. A new entry will be created after confirmation.";
         }
       }
 
       function resetZomatoScreenshotImport() {
         document.getElementById("zomato-earning-screenshot").value = "";
         document.getElementById("screenshot-import-preview").style.display = "none";
-        document.getElementById("screenshot-ocr-status").textContent = "Ready. Day किंवा Week screenshot निवडा. Weekly Graph मधील daily amounts घेतले जातील.";
+        document.getElementById("screenshot-ocr-status").textContent = "Ready. Select a Day or Week screenshot. Daily amounts from the weekly graph will be captured.";
         pendingZomatoScreenshotImport = null;
       }
 
@@ -4978,11 +4978,11 @@
         const rows=pendingZomatoScreenshotImport.type==="week"
           ? [...document.querySelectorAll("#screenshot-weekly-rows input[data-week-date]")].map((d,i)=>{const raw=document.querySelector('#screenshot-weekly-rows input[data-week-amount="'+i+'"]').value.trim();return {date:d.value,amount:raw===""?NaN:Number(raw)};})
           : [{date:document.getElementById("screenshot-import-date").value,amount:Number(document.getElementById("screenshot-import-amount").value)}];
-        if(!rows.length||rows.some(r=>!r.date||!Number.isFinite(r.amount)||r.amount<0)){showToast("सर्व तारखा आणि रक्कम योग्य भरा.","error");return;}
-        const seen=new Set();for(const r of rows){if(seen.has(r.date)){showToast("Duplicate date row आहे.","error");return;}seen.add(r.date);const[y,m,d]=r.date.split("-").map(Number);if(y<2024||y>2030||m<1||m>12||d<1||d>getDaysInMonth(y,m-1)){showToast("Valid date निवडा.","error");return;}}
+        if(!rows.length||rows.some(r=>!r.date||!Number.isFinite(r.amount)||r.amount<0)){showToast("Enter valid dates and amounts for all rows.","error");return;}
+        const seen=new Set();for(const r of rows){if(seen.has(r.date)){showToast("Duplicate date row found.","error");return;}seen.add(r.date);const[y,m,d]=r.date.split("-").map(Number);if(y<2024||y>2030||m<1||m>12||d<1||d>getDaysInMonth(y,m-1)){showToast("Select a valid date.","error");return;}}
         const changes=[],dups=[];
         rows.forEach(r=>{const[y,m,d]=r.date.split("-").map(Number);let md;try{md=JSON.parse(localStorage.getItem(getMonthStorageKey(y,m-1))||'{"days":{}}');}catch(e){md={days:{}};}const old=Number(md?.days?.[d]?.zomato||0);if(old===r.amount&&old>0)dups.push(r);else changes.push({...r,y,m:m-1,d,old});});
-        if(!changes.length){showToast("सर्व entries आधीच आहेत. Duplicate skip केले.");resetZomatoScreenshotImport();return;}
+        if(!changes.length){showToast("All entries already exist. Duplicates were skipped.");resetZomatoScreenshotImport();return;}
         const apply=()=>{const affected=new Set();changes.forEach(r=>{const key=getMonthStorageKey(r.y,r.m);let md=(r.y===AppState.currentYear&&r.m===AppState.currentMonth)?AppState.monthData:JSON.parse(localStorage.getItem(key)||'{"days":{}}');md.days=md.days||{};if(!md.days[r.d])md.days[r.d]={shift1:"Off",shift2:"Off",shift3:"Off",zomato:0};md.days[r.d].zomato=r.amount;if(md!==AppState.monthData){if(!md.monthlyTarget)md.monthlyTarget=AppState.settings.defaultMonthlyTarget;localStorage.setItem(key,JSON.stringify(md));}affected.add(r.y+"-"+r.m);});
           if(affected.has(AppState.currentYear+"-"+AppState.currentMonth)){saveMonthData(AppState.currentYear,AppState.currentMonth);renderAll();}
           affected.forEach(k=>{const[y,m]=k.split("-").map(Number);if(!(y===AppState.currentYear&&m===AppState.currentMonth))pushMonthDataToServer(y,m);});
