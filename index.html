@@ -3122,7 +3122,7 @@
           <div class="form-group"><label for="reset-new-password">New Password</label><input type="password" id="reset-new-password" autocomplete="new-password" placeholder="At least 6 characters" /></div>
           <div class="form-group"><label for="reset-confirm-password">Confirm New Password</label><input type="password" id="reset-confirm-password" autocomplete="new-password" placeholder="Re-enter new password" /></div>
         </div>
-        <div class="modal-footer"><button class="btn btn-secondary" data-close="modal-forgot-password">Cancel</button><button id="reset-password-submit" class="btn btn-primary">Reset Password</button></div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-close="modal-forgot-password">Cancel</button><button id="reset-password-submit" class="btn btn-primary" type="button" onclick="resetPasswordNow()">Reset Password</button></div>
       </div>
     </div>
 
@@ -3526,27 +3526,8 @@
         renderAll();
       }
 
-      // --- EVENT HANDLERS SETUP ---
-      function setupEventListeners() {
-        // Auth Form
-        const loginForm = document.getElementById("login-form");
-        const loginPassword = document.getElementById("login-password");
-        const passwordEye = document.getElementById("toggle-login-password");
-        passwordEye.addEventListener("click", () => {
-          const show = loginPassword.type === "password";
-          loginPassword.type = show ? "text" : "password";
-          passwordEye.textContent = show ? "🙈" : "👁";
-          passwordEye.setAttribute("aria-label", show ? "Hide password" : "Show password");
-          passwordEye.setAttribute("aria-pressed", String(show));
-        });
-        document.getElementById("forgot-password-btn").addEventListener("click", () => {
-          ["reset-username", "reset-recovery-pin", "reset-new-password", "reset-confirm-password"].forEach((id) => {
-            document.getElementById(id).value = "";
-          });
-          document.getElementById("modal-forgot-password").classList.add("open");
-        });
-
-        document.getElementById("reset-password-submit").addEventListener("click", () => {
+      function resetPasswordNow() {
+        try {
           const user = document.getElementById("reset-username").value.trim();
           const pin = document.getElementById("reset-recovery-pin").value.trim();
           const newPass = document.getElementById("reset-new-password").value;
@@ -3573,7 +3554,34 @@
           document.getElementById("modal-forgot-password").classList.remove("open");
           document.getElementById("login-password").value = "";
           showToast("Password reset successfully. Please sign in with your new password.");
+        } catch (error) {
+          console.error("Password reset failed:", error);
+          alert("Password reset could not complete. Please refresh the page and try again.");
+        }
+      }
+
+      // --- EVENT HANDLERS SETUP ---
+      function setupEventListeners() {
+        // Auth Form
+        const loginForm = document.getElementById("login-form");
+        const loginPassword = document.getElementById("login-password");
+        const passwordEye = document.getElementById("toggle-login-password");
+        passwordEye.addEventListener("click", () => {
+          const show = loginPassword.type === "password";
+          loginPassword.type = show ? "text" : "password";
+          passwordEye.textContent = show ? "🙈" : "👁";
+          passwordEye.setAttribute("aria-label", show ? "Hide password" : "Show password");
+          passwordEye.setAttribute("aria-pressed", String(show));
         });
+        document.getElementById("forgot-password-btn").addEventListener("click", () => {
+          ["reset-username", "reset-recovery-pin", "reset-new-password", "reset-confirm-password"].forEach((id) => {
+            document.getElementById(id).value = "";
+          });
+          document.getElementById("modal-forgot-password").classList.add("open");
+        });
+
+        // Password reset is handled directly by the button's inline onclick
+        // so it still works if the main event-listener setup is interrupted.
 
         loginForm.addEventListener("submit", (e) => {
           e.preventDefault();
