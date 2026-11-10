@@ -2434,6 +2434,120 @@
         .chart-card,.report-card,.earning-table tr,.earning-calendar-day { transition:none !important; }
       }
 
+
+      /* MOTIX SIGNATURE VISUAL POLISH */
+      :root {
+        --bg-main: #081421;
+        --bg-surface: #102238;
+        --bg-card: #172d43;
+        --bg-card-hover: #203b55;
+        --bg-input: #0b1b2c;
+        --border-subtle: rgba(190, 211, 232, .13);
+        --border-strong: rgba(225, 190, 112, .42);
+        --gold-premium: #e3bd72;
+        --gold-soft: #f3dfb2;
+        --zomato-red: #a33d55;
+        --zomato-red-hover: #bd526a;
+        --zomato-red-muted: rgba(163, 61, 85, .18);
+        --zomato-red-border: rgba(205, 112, 133, .42);
+        --shadow-card: 0 16px 38px rgba(0, 8, 18, .28);
+      }
+      body {
+        background:
+          radial-gradient(ellipse at 8% 2%, rgba(50, 104, 145, .22), transparent 34%),
+          radial-gradient(ellipse at 96% 12%, rgba(163, 61, 85, .15), transparent 32%),
+          radial-gradient(ellipse at 50% 100%, rgba(227, 189, 114, .055), transparent 42%),
+          var(--bg-main);
+      }
+      header.app-topbar, .app-topbar {
+        background: rgba(8, 22, 37, .88);
+        border-bottom: 1px solid rgba(227, 189, 114, .22);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .13);
+        backdrop-filter: blur(18px);
+      }
+      .brand-badge {
+        background: linear-gradient(135deg, #bd526a, #713047) !important;
+        border: 1px solid rgba(243, 223, 178, .38);
+        box-shadow: 0 6px 18px rgba(163, 61, 85, .28);
+      }
+      .brand-title { letter-spacing: -.45px; }
+      .nav-link {
+        border-radius: 10px;
+        transition: color .2s ease, background .2s ease, transform .2s ease;
+      }
+      .nav-link:hover { background: rgba(227, 189, 114, .09); transform: translateY(-1px); }
+      .nav-link.active {
+        background: linear-gradient(135deg, rgba(163, 61, 85, .95), rgba(99, 39, 59, .96));
+        border: 1px solid rgba(243, 223, 178, .28);
+        box-shadow: 0 5px 16px rgba(0, 0, 0, .16), inset 0 1px rgba(255,255,255,.12);
+      }
+      .toolbar-strip, .table-card, .chart-card, .report-history-card,
+      .earning-calendar-card, .report-card, .progress-container {
+        border: 1px solid rgba(190, 211, 232, .13);
+        border-radius: 17px;
+        background: linear-gradient(145deg, rgba(25, 48, 70, .97), rgba(13, 33, 53, .98));
+        box-shadow: 0 14px 34px rgba(0, 8, 18, .20), inset 0 1px 0 rgba(255,255,255,.045);
+      }
+      .kpi-card {
+        border-radius: 18px;
+        background: linear-gradient(145deg, #24445f 0%, #172e45 62%, #12283e 100%);
+        border: 1px solid rgba(227, 189, 114, .25);
+        box-shadow: 0 12px 28px rgba(0, 8, 18, .25), inset 0 1px 0 rgba(255,255,255,.06);
+      }
+      .kpi-card:hover, .report-card:hover, .chart-card:hover {
+        border-color: rgba(243, 223, 178, .48);
+        box-shadow: 0 18px 40px rgba(0, 8, 18, .32), 0 0 22px rgba(227, 189, 114, .055);
+      }
+      .kpi-value, .chart-title, .table-heading, .report-card h4, .modal-title {
+        color: #f3dfb2;
+      }
+      .btn-primary, #login-form .btn-primary {
+        color: #fff;
+        background: linear-gradient(110deg, #b64a63, #783047 72%, #613047);
+        border: 1px solid rgba(243, 223, 178, .34);
+        box-shadow: 0 9px 24px rgba(105, 37, 59, .32), inset 0 1px 0 rgba(255,255,255,.17);
+      }
+      .btn-primary:hover, #login-form .btn-primary:hover {
+        background: linear-gradient(110deg, #ca5b73, #91405a 72%, #71354e);
+        box-shadow: 0 13px 30px rgba(105, 37, 59, .4);
+      }
+      .btn-secondary {
+        background: rgba(19, 42, 63, .9);
+        border-color: rgba(190, 211, 232, .17);
+      }
+      .btn-secondary:hover { border-color: rgba(227,189,114,.4); }
+      input, select, textarea, .select-input, .text-input {
+        border-radius: 10px;
+      }
+      input:focus, select:focus, textarea:focus, .select-input:focus, .text-input:focus {
+        border-color: rgba(227, 189, 114, .72) !important;
+        box-shadow: 0 0 0 3px rgba(227, 189, 114, .12) !important;
+      }
+      .table-card, .chart-card, .report-card { overflow: hidden; }
+      .earning-table thead th, .report-history-table th {
+        color: #ead5a5;
+        background: rgba(7, 22, 37, .58);
+      }
+      .earning-table tbody tr:hover { background: rgba(227, 189, 114, .045); }
+      .auth-card {
+        border: 1px solid rgba(227, 189, 114, .30);
+        box-shadow: 0 32px 95px rgba(0,0,0,.62), 0 0 55px rgba(163,61,85,.12), inset 0 1px 0 rgba(255,255,255,.07);
+      }
+      .auth-logo-badge {
+        background: linear-gradient(135deg, #c2536c, #713047);
+        box-shadow: 0 9px 25px rgba(163,61,85,.3), inset 0 1px 0 rgba(255,255,255,.22);
+      }
+      .moti-app-footer { border-top-color: rgba(227,189,114,.17); }
+      .moti-app-footer a:hover { color: #f3dfb2; }
+      ::selection { color: #081421; background: #e3bd72; }
+      @media (prefers-reduced-motion: no-preference) {
+        .kpi-card, .report-card, .chart-card, .btn, .nav-link { transition-duration: .22s; }
+      }
+      @media (max-width: 768px) {
+        header.app-topbar, .app-topbar { background: rgba(8,22,37,.96); }
+        .toolbar-strip, .table-card, .chart-card, .report-card { border-radius: 14px; }
+      }
+
 </style>
   
     <meta name="theme-color" content="#e23744" />
